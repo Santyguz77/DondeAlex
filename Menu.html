@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="utf-8" />
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+	<title>Menú Gourmet - Donde Alex</title>
+	<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap"
+		rel="stylesheet" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+		rel="stylesheet" />
+	<script>
+		tailwind.config = {
+			darkMode: "class",
+			theme: {
+				extend: {
+					colors: {
+						"primary": "#8B0000", // Crimson Profundo / Profesional
+						"primary-dark": "#4A0000",
+						"primary-light": "#FFF5F5",
+						"accent": "#C53030",
+						"background": "#FFFFFF",
+						"surface": "#FAFAFA",
+						"text-main": "#1A1A1A",
+						"text-muted": "#71717A",
+					},
+					fontFamily: {
+						"display": ["Plus Jakarta Sans", "sans-serif"]
+					},
+					boxShadow: {
+						'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 12px -2px rgba(0, 0, 0, 0.03)',
+						'floating': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+					}
+				},
+			},
+		}
+	</script>
+	<style type="text/tailwindcss">
+		@layer utilities {
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+            .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        }
+    </style>
+	<style>
+		body {
+			font-family: 'Plus Jakarta Sans', sans-serif;
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		.material-symbols-outlined {
+			font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+		}
+
+		@keyframes slideInUp {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.animate-slide-up {
+			animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar {
+			width: 4px;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar-thumb {
+			background: #E4E4E7;
+			border-radius: 10px;
+		}
+	</style>
+</head>
+
+<body class="bg-white text-text-main min-h-screen flex flex-col md:flex-row overflow-hidden">
+	<!-- Pantalla de Carga Minimalista -->
+	<div id="loader"
+		class="fixed inset-0 z-[100] bg-white flex items-center justify-center transition-opacity duration-700">
+		<div class="flex flex-col items-center">
+			<div class="w-8 h-8 border-[3px] border-primary-light border-t-primary rounded-full animate-spin mb-4">
+			</div>
+			<p class="text-[9px] font-bold text-primary tracking-[0.5em] uppercase opacity-50">Donde Alex</p>
+		</div>
+	</div>
+
+	<!-- Sidebar Minimalista Profesional -->
+	<aside
+		class="w-full md:w-72 lg:w-80 bg-surface border-r border-slate-100 flex-shrink-0 flex flex-col h-screen z-10 hidden md:flex">
+		<div class="p-10 flex flex-col items-center text-center gap-4 bg-white border-b border-slate-50">
+			<div class="w-16 h-16 rounded-full overflow-hidden shadow-premium p-0.5 border border-slate-100">
+				<img alt="Donde Alex" class="w-full h-full object-cover rounded-full" src="image.png" />
+			</div>
+			<div>
+				<h1 class="text-xl font-bold text-primary tracking-tight uppercase">Donde Alex</h1>
+				<p class="text-[8px] text-text-muted font-bold tracking-[0.3em] uppercase mt-1">Exquisite Gourmet</p>
+			</div>
+		</div>
+
+		<nav id="sidebar-categories" class="flex-1 overflow-y-auto p-6 space-y-1.5 scrollbar-hide">
+			<!-- Categorías Dinámicas con estilo minimalista -->
+		</nav>
+
+		<div class="p-8 bg-surface border-t border-slate-100 space-y-4">
+			<div class="flex items-center gap-3 text-text-muted transition-opacity">
+				<span class="material-symbols-outlined text-[18px]">event_seat</span>
+				<span class="text-[9px] font-bold uppercase tracking-wider">Servicio de Mesa Premium</span>
+			</div>
+			<div class="flex items-center gap-3 text-primary">
+				<span class="material-symbols-outlined text-[18px]">verified</span>
+				<span class="text-[9px] font-black tracking-widest uppercase">Garantía de Sabor</span>
+			</div>
+		</div>
+	</aside>
+
+	<!-- Navegación Móvil Minimalista -->
+	<div
+		class="md:hidden sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-50 z-40 p-4 shadow-sm overflow-x-auto no-scrollbar">
+		<div id="mobile-categories" class="flex gap-4 px-2">
+			<!-- Categorías Dinámicas Móvil -->
+		</div>
+	</div>
+
+	<!-- Contenido Principal -->
+	<main id="main-content"
+		class="flex-1 bg-white h-screen overflow-y-auto scroll-smooth relative custom-scrollbar pb-20">
+		<!-- Header Principal Refinado -->
+		<header
+			class="px-8 py-12 md:px-12 md:py-16 flex flex-col md:flex-row md:items-center justify-between gap-8 max-w-7xl mx-auto w-full">
+			<div class="space-y-3">
+				<p class="text-[9px] font-black text-primary uppercase tracking-[0.4em] mb-1">Menú de la Casa</p>
+				<h2 id="current-category-name"
+					class="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tighter leading-none">Nuestra
+					Selección</h2>
+				<div class="flex items-center gap-3 pt-2">
+					<div class="h-[1px] w-8 bg-primary"></div>
+					<p id="current-category-desc" class="text-text-muted font-medium text-xs">Preparaciones artesanales
+						con los mejores ingredientes.</p>
+				</div>
+			</div>
+
+			<div class="relative group w-full md:w-80">
+				<span
+					class="absolute left-0 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-300 group-focus-within:text-primary transition-colors text-xl">search</span>
+				<input type="text" id="search-input" placeholder="¿Qué platillo busca?" onkeyup="searchMenu()"
+					class="w-full bg-transparent border-b border-slate-200 focus:border-primary px-8 py-3 text-xs font-semibold focus:ring-0 transition-all placeholder:text-slate-300">
+			</div>
+		</header>
+
+		<div class="px-8 md:px-12 max-w-7xl mx-auto space-y-12">
+			<!-- Sección de Banners Promocionales (Minimalista) -->
+			<section id="promo-section"
+				class="grid grid-cols-1 lg:grid-cols-2 gap-6 opacity-0 translate-y-4 transition-all duration-700">
+				<div
+					class="relative h-64 rounded-[2rem] overflow-hidden group shadow-premium flex flex-col justify-end p-8 bg-slate-900">
+					<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+					<div class="relative z-10 space-y-2">
+						<span
+							class="text-[8px] font-black text-primary-light uppercase tracking-[0.3em]">Temporal</span>
+						<h4 class="text-2xl font-bold text-white tracking-tight">Especial de Temporada</h4>
+						<p class="text-[10px] text-slate-300 font-medium">Pregunte por nuestra sugerencia del chef
+							disponible hoy.</p>
+					</div>
+				</div>
+				<div
+					class="relative h-64 rounded-[2rem] overflow-hidden group shadow-premium flex flex-col justify-end p-8 bg-primary">
+					<div class="absolute inset-0 bg-gradient-to-tr from-primary-dark/40 to-transparent"></div>
+					<div class="relative z-10 space-y-2">
+						<span class="text-[8px] font-black text-white/60 uppercase tracking-[0.3em]">Promoción</span>
+						<h4 class="text-3xl font-black text-white tracking-tighter italic">"El sabor de compartir"</h4>
+						<p class="text-[10px] text-white/70 font-medium">Combos exclusivos para grupos y familias.</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- Cuadrícula de Productos Refinada -->
+			<div id="menu-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+				<!-- Productos Dinámicos -->
+			</div>
+
+			<footer class="pt-20 pb-10 text-center border-t border-slate-50">
+				<p class="text-[8px] font-black text-slate-300 uppercase tracking-[0.6em]">Donde Alex &middot;
+					Experiencia Culinaria</p>
+				<div class="mt-8 flex justify-center gap-10 opacity-20">
+					<span class="material-symbols-outlined text-lg">restaurant</span>
+					<span class="material-symbols-outlined text-lg">wine_bar</span>
+					<span class="material-symbols-outlined text-lg">local_cafe</span>
+				</div>
+			</footer>
+		</div>
+	</main>
+
+	<script src="app.js"></script>
+	<script>
+		let allMenuItems = [];
+		let currentFilter = 'all';
+
+		async function init() {
+			try {
+				await loadInitialData();
+				allMenuItems = AppState.menuItems;
+
+				setTimeout(() => {
+					document.getElementById('loader').classList.add('opacity-0');
+					setTimeout(() => {
+						document.getElementById('loader').style.display = 'none';
+						document.getElementById('promo-section').classList.remove('opacity-0', 'translate-y-4');
+						renderCategories();
+						renderMenu();
+					}, 700);
+				}, 1000);
+			} catch (e) {
+				console.error(e);
+			}
+		}
+
+		function renderCategories() {
+			const categories = [...new Set(allMenuItems.map(item => item.category))];
+			const sidebar = document.getElementById('sidebar-categories');
+			const mobile = document.getElementById('mobile-categories');
+
+			const categoryIcons = {
+				'Hamburguesas': 'fastfood',
+				'Perros': 'hot_dog',
+				'Carnes': 'steak',
+				'Pinchos': 'outdoor_grill',
+				'Bebidas': 'local_bar',
+				'Pizza': 'local_pizza',
+				'Default': 'restaurant_menu'
+			};
+
+			const html = `
+                <button onclick="filterByCategory('all')" 
+                    class="w-full flex items-center gap-4 py-3.5 px-6 rounded-2xl transition-all duration-400 group
+                    ${currentFilter === 'all' ? 'bg-primary text-white shadow-premium' : 'text-text-muted hover:bg-slate-50'}">
+                    <span class="material-symbols-outlined text-[20px] ${currentFilter === 'all' ? 'text-white' : 'text-slate-300'}">grid_view</span>
+                    <span class="text-[11px] font-bold uppercase tracking-[0.1em]">Ver Todo</span>
+                </button>
+                ${categories.map(cat => {
+				const icon = categoryIcons[cat] || categoryIcons['Default'];
+				return `
+                    <button onclick="filterByCategory('${cat}')" 
+                        class="w-full flex items-center gap-4 py-3.5 px-6 rounded-2xl transition-all duration-400 group
+                        ${currentFilter === cat ? 'bg-primary text-white shadow-premium' : 'text-text-muted hover:bg-slate-50'}">
+                        <span class="material-symbols-outlined text-[20px] ${currentFilter === cat ? 'text-white' : 'text-slate-300'}">${icon}</span>
+                        <span class="text-[11px] font-bold uppercase tracking-[0.1em]">${cat}</span>
+                    </button>
+                    `;
+			}).join('')}
+            `;
+
+			sidebar.innerHTML = html;
+
+			mobile.innerHTML = `
+                <button onclick="filterByCategory('all')" class="whitespace-nowrap pb-2 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all ${currentFilter === 'all' ? 'border-primary text-primary' : 'border-transparent text-slate-300'}">TODOS</button>
+                ${categories.map(cat => `
+                    <button onclick="filterByCategory('${cat}')" class="whitespace-nowrap pb-2 text-[10px] font-black uppercase tracking-widest border-b-2 transition-all ${currentFilter === cat ? 'border-primary text-primary' : 'border-transparent text-slate-300'}">${cat.toUpperCase()}</button>
+                `).join('')}
+            `;
+		}
+
+		function filterByCategory(category) {
+			currentFilter = category;
+			renderCategories();
+			document.getElementById('current-category-name').textContent = category === 'all' ? 'Nuestra Selección' : category;
+			renderMenu();
+		}
+
+		function searchMenu() { renderMenu(); }
+
+		function renderMenu() {
+			const searchTerm = document.getElementById('search-input').value.toLowerCase();
+			const container = document.getElementById('menu-grid');
+
+			let filteredItems = currentFilter === 'all'
+				? allMenuItems
+				: allMenuItems.filter(item => item.category === currentFilter);
+
+			if (searchTerm) {
+				filteredItems = filteredItems.filter(item =>
+					item.name.toLowerCase().includes(searchTerm) ||
+					(item.description && item.description.toLowerCase().includes(searchTerm))
+				);
+			}
+
+			if (filteredItems.length === 0) {
+				container.innerHTML = `<div class="col-span-full py-20 text-center opacity-30 animate-slide-up"><p class="text-[10px] font-black uppercase tracking-widest">Sin resultados</p></div>`;
+				return;
+			}
+
+			container.innerHTML = filteredItems.map((item, idx) => `
+                <div class="flex items-center gap-6 group animate-fade-in bg-white rounded-3xl p-4 md:p-3 hover:bg-slate-50 hover:shadow-floating hover:-translate-y-1 transition-all duration-500 cursor-pointer ${!item.available ? 'opacity-40 grayscale pointer-events-none' : ''}">
+                    <!-- Imagen Minimalista -->
+                    <div class="w-32 h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden flex-shrink-0 shadow-premium relative">
+                        ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover grayscale-[10%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" alt="${item.name}">` : `<div class="w-full h-full bg-slate-50 flex items-center justify-center text-slate-200"><span class="material-symbols-outlined text-4xl">restaurant</span></div>`}
+                        ${!item.available ? `<div class="absolute inset-0 bg-white/60 flex items-center justify-center"><span class="text-[8px] font-black text-slate-900 border border-slate-900 px-2 py-1 uppercase tracking-tighter">Agotado</span></div>` : ''}
+                    </div>
+                    
+                    <!-- Contenido Limpio -->
+                    <div class="flex-1 space-y-2 py-2">
+                        <div class="flex justify-between items-start gap-4">
+                            <h3 class="text-[17px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">${item.name}</h3>
+                            <span class="text-sm font-extrabold text-primary tracking-tighter">${Utils.formatCurrency(item.price)}</span>
+                        </div>
+                        <p class="text-[11px] text-text-muted leading-relaxed line-clamp-2 md:line-clamp-3 font-medium opacity-80">
+                            ${item.description || 'Una especialidad premium preparada al momento con ingredientes seleccionados.'}
+                        </p>
+                        <div class="flex items-center gap-4 pt-1">
+                            <span class="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em] group-hover:text-primary-dark transition-colors">Selección Gourmet</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+		}
+
+		document.addEventListener('DOMContentLoaded', init);
+	</script>
+</body>
+
+</html>

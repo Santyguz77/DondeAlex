@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="theme-color" content="#47eb7e">
+	<link rel="manifest" href="/manifest.json">
+	<link rel="icon" type="image/png" href="/icon-192.png">
+	<link rel="apple-touch-icon" href="/icon-192.png">
+	<title>Login - Donde Alex</title>
+
+	<!-- Tailwind & Fonts -->
+	<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+		rel="stylesheet">
+	<link rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+
+	<script>
+		tailwind.config = {
+			darkMode: "class",
+			theme: {
+				extend: {
+					colors: {
+						"primary": "#47eb7e",
+						"primary-dark": "#0a5c2b",
+						"background-light": "#f6f8f6",
+						"background-dark": "#0f1711",
+						"surface": "#ffffff",
+						"surface-dark": "#1c2e22",
+						"border-light": "#e2e8f0",
+						"border-dark": "#2d3748",
+					},
+					fontFamily: {
+						"display": ["Plus Jakarta Sans", "sans-serif"]
+					}
+				},
+			},
+		}
+	</script>
+
+	<style>
+		body {
+			font-family: 'Plus Jakarta Sans', sans-serif;
+			background-image: radial-gradient(circle at 2px 2px, #e2e8f0 1px, transparent 0);
+			background-size: 40px 40px;
+		}
+
+		.glass-effect {
+			background: rgba(255, 255, 255, 0.8);
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+		}
+
+		@keyframes float {
+			0% {
+				transform: translateY(0px);
+			}
+
+			50% {
+				transform: translateY(-10px);
+			}
+
+			100% {
+				transform: translateY(0px);
+			}
+		}
+
+		.animate-float {
+			animation: float 6s ease-in-out infinite;
+		}
+	</style>
+</head>
+
+<body class="bg-background-light text-slate-900 min-h-screen flex items-center justify-center p-6 select-none">
+	<div class="max-w-[1000px] w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+		<!-- Lado Izquierdo: Branding Visual -->
+		<div class="hidden lg:flex flex-col items-start gap-8">
+			<div class="animate-float">
+				<div
+					class="w-24 h-24 rounded-[2.5rem] bg-primary flex items-center justify-center shadow-2xl shadow-primary/30 transform -rotate-6">
+					<span class="material-symbols-outlined text-primary-dark text-5xl">restaurant</span>
+				</div>
+			</div>
+			<div>
+				<h1 class="text-6xl font-black text-slate-900 tracking-tighter leading-none mb-4">
+					Bienvenido a <br>
+					<span class="text-primary-dark">Donde Alex</span>
+				</h1>
+				<p class="text-xl text-slate-500 font-medium max-w-sm leading-relaxed">
+					Gestiona tu restaurante con tecnología.
+				</p>
+			</div>
+		</div>
+
+		<!-- Lado Derecho: Card de Login -->
+		<div class="login-container w-full max-w-[440px] mx-auto">
+			<div class="lg:hidden text-center mb-10">
+				<div
+					class="w-20 h-20 rounded-3xl bg-primary flex items-center justify-center shadow-xl shadow-primary/20 mx-auto mb-4">
+					<span class="material-symbols-outlined text-primary-dark text-4xl leading-none">restaurant</span>
+				</div>
+				<h2 class="text-3xl font-black text-slate-900 tracking-tight">Donde Alex</h2>
+			</div>
+
+			<div
+				class="glass-effect bg-white border border-white rounded-[3rem] p-8 md:p-12 shadow-2xl shadow-slate-200">
+				<div class="mb-10 text-center">
+					<h3 class="text-xl font-black text-slate-900 mb-2">Iniciar Sesión</h3>
+					<p class="text-sm text-slate-400 font-bold uppercase tracking-widest">Panel de Control</p>
+				</div>
+
+				<!-- Tabs de Rol -->
+				<div class="flex p-1.5 bg-slate-100 rounded-[1.5rem] mb-8">
+					<button onclick="switchTab('admin')" id="tab-admin"
+						class="flex-1 py-3 px-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 flex items-center justify-center gap-2 bg-white shadow-sm text-primary-dark">
+						<span class="material-symbols-outlined text-[20px]">settings</span>
+						ADMIN
+					</button>
+					<button onclick="switchTab('waiter')" id="tab-waiter"
+						class="flex-1 py-3 px-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 flex items-center justify-center gap-2 text-slate-400">
+						<span class="material-symbols-outlined text-[20px]">badge</span>
+						MESERO
+					</button>
+				</div>
+
+				<div id="error-message"
+					class="hidden animate-bounce mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-xs font-bold text-center">
+				</div>
+
+				<form id="login-form" onsubmit="handleLogin(event)" class="space-y-6">
+					<div class="space-y-1.5">
+						<label
+							class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Usuario</label>
+						<div class="relative group">
+							<span
+								class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 transition-colors group-focus-within:text-primary-dark">person</span>
+							<input type="text" id="username" required
+								class="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-300"
+								placeholder="Nombre de usuario">
+						</div>
+					</div>
+
+					<div class="space-y-1.5">
+						<label
+							class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
+						<div class="relative group">
+							<span
+								class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 transition-colors group-focus-within:text-primary-dark">lock</span>
+							<input type="password" id="password" required
+								class="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl text-sm font-bold focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-slate-300"
+								placeholder="••••••••">
+						</div>
+					</div>
+
+					<button type="submit" id="login-btn"
+						class="w-full bg-primary text-primary-dark font-black py-4 rounded-2xl shadow-xl shadow-primary/30 flex items-center justify-center gap-3 transition-all hover:scale-[1.02] active:scale-95 group">
+						<span
+							class="material-symbols-outlined transform group-hover:rotate-12 transition-transform">key</span>
+						ACCEDER AL SISTEMA
+					</button>
+				</form>
+
+				<div class="mt-10 text-center">
+					<a href="/Menu.html"
+						class="text-xs font-black text-slate-400 hover:text-primary-dark transition-colors uppercase tracking-[0.2em]">
+						Consultar Menú Público
+					</a>
+				</div>
+			</div>
+
+			<p class="text-center mt-8 text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+				Desarrollado con ❤️ para Donde Alex
+			</p>
+		</div>
+	</div>
+
+	<script>
+		let currentTab = 'admin';
+
+		const credentials = {
+			admin: {
+				username: 'admin',
+				password: 'admin123',
+				redirect: '/index.html'
+			},
+			waiter: {
+				username: 'mesero',
+				password: 'mesero123',
+				redirect: '/meseros.html'
+			}
+		};
+
+		function switchTab(tab) {
+			currentTab = tab;
+			const tabAdmin = document.getElementById('tab-admin');
+			const tabWaiter = document.getElementById('tab-waiter');
+
+			if (tab === 'admin') {
+				tabAdmin.className = "flex-1 py-3 px-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 flex items-center justify-center gap-2 bg-white shadow-sm text-primary-dark";
+				tabWaiter.className = "flex-1 py-3 px-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 flex items-center justify-center gap-2 text-slate-400";
+			} else {
+				tabWaiter.className = "flex-1 py-3 px-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 flex items-center justify-center gap-2 bg-white shadow-sm text-primary-dark";
+				tabAdmin.className = "flex-1 py-3 px-4 rounded-[1.2rem] text-sm font-black transition-all duration-300 flex items-center justify-center gap-2 text-slate-400";
+			}
+
+			document.getElementById('login-form').reset();
+			hideError();
+		}
+
+		function showError(message) {
+			const errorDiv = document.getElementById('error-message');
+			errorDiv.textContent = message;
+			errorDiv.classList.remove('hidden');
+		}
+
+		function hideError() {
+			document.getElementById('error-message').classList.add('hidden');
+		}
+
+		async function handleLogin(event) {
+			event.preventDefault();
+			const btn = document.getElementById('login-btn');
+			btn.disabled = true;
+			btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> AUTHENTICATING...';
+
+			hideError();
+
+			const username = document.getElementById('username').value;
+			const password = document.getElementById('password').value;
+			const cred = credentials[currentTab];
+
+			setTimeout(() => {
+				if (username === cred.username && password === cred.password) {
+					localStorage.setItem('userSession', JSON.stringify({
+						type: currentTab,
+						username: username,
+						loginTime: new Date().toISOString()
+					}));
+					window.location.href = cred.redirect;
+				} else {
+					showError('❌ USUARIO O CONTRASEÑA INCORRECTOS');
+					btn.disabled = false;
+					btn.innerHTML = '<span class="material-symbols-outlined">key</span> ACCEDER AL SISTEMA';
+				}
+			}, 800);
+		}
+
+		window.addEventListener('load', () => {
+			const session = localStorage.getItem('userSession');
+			if (session) {
+				const userData = JSON.parse(session);
+				// window.location.href = credentials[userData.type].redirect;
+			}
+		});
+	</script>
+</body>
+
+</html>

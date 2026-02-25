@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="theme-color" content="#47eb7e">
+	<link rel="manifest" href="/manifest.json">
+	<link rel="icon" type="image/png" href="/image.png">
+	<link rel="apple-touch-icon" href="/image.png">
+	<title>Meseros - Donde Alex</title>
+
+	<!-- Tailwind & Fonts -->
+	<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+		rel="stylesheet">
+	<link rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+
+	<script>
+		tailwind.config = {
+			darkMode: "class",
+			theme: {
+				extend: {
+					colors: {
+						"primary": "#47eb7e",
+						"primary-dark": "#0a5c2b",
+						"background-light": "#f6f8f6",
+						"background-dark": "#0f1711",
+						"surface": "#ffffff",
+						"surface-dark": "#1c2e22",
+						"border-light": "#e2e8f0",
+						"border-dark": "#2d3748",
+					},
+					fontFamily: {
+						"display": ["Plus Jakarta Sans", "sans-serif"]
+					}
+				},
+			},
+		}
+	</script>
+
+	<style>
+		body {
+			font-family: 'Plus Jakarta Sans', sans-serif;
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar {
+			width: 4px;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		.custom-scrollbar::-webkit-scrollbar-thumb {
+			background: #cbd5e1;
+			border-radius: 10px;
+		}
+
+		/* Animaciones suaves */
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+				transform: translateY(10px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.animate-fade-in {
+			animation: fadeIn 0.3s ease-out forwards;
+		}
+
+		/* Estilo para items en el resumen */
+		.order-item-enter {
+			animation: slideInRight 0.3s ease-out forwards;
+		}
+
+		@keyframes slideInRight {
+			from {
+				opacity: 0;
+				transform: translateX(20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateX(0);
+			}
+		}
+	</style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+	<!-- Pantalla de Carga -->
+	<div id="loader"
+		class="fixed inset-0 z-[100] bg-white dark:bg-background-dark flex items-center justify-center transition-opacity duration-500">
+		<div class="flex flex-col items-center">
+			<div class="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+			<p class="text-sm font-bold text-primary-dark dark:text-primary animate-pulse tracking-widest uppercase">
+				Donde Alex</p>
+		</div>
+	</div>
+
+	<div class="max-w-[1400px] mx-auto min-h-screen flex flex-col">
+
+		<!-- VISTA SELECCIÓN DE MESAS -->
+		<div id="table-selection-view" class="flex-1 flex flex-col p-4 md:p-8 animate-fade-in">
+			<header class="flex items-center justify-between mb-8">
+				<div class="flex items-center gap-4">
+					<div
+						class="w-12 h-12 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+						<span class="material-symbols-outlined text-primary-dark text-3xl">restaurant</span>
+					</div>
+					<div>
+						<h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Meseros</h1>
+						<p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Panel de Atención</p>
+					</div>
+				</div>
+				<button onclick="logout()"
+					class="w-12 h-12 rounded-2xl bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark flex items-center justify-center text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors shadow-sm">
+					<span class="material-symbols-outlined">logout</span>
+				</button>
+			</header>
+
+			<div
+				class="bg-surface dark:bg-surface-dark rounded-[2.5rem] p-6 border border-border-light dark:border-border-dark shadow-xl shadow-slate-200/50 dark:shadow-none min-h-[60vh]">
+				<div class="flex items-center justify-between mb-8">
+					<h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">Estado de Mesas</h2>
+					<div class="flex gap-4 text-[10px] font-bold uppercase tracking-wider">
+						<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span>
+							Libre</div>
+						<div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span>
+							Ocupada</div>
+					</div>
+				</div>
+
+				<div id="tables-grid"
+					class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+					<!-- Dinámico -->
+				</div>
+			</div>
+		</div>
+
+		<!-- VISTA DE PEDIDO (MODAL FULLSCREEN EMULADO) -->
+		<div id="order-view"
+			class="hidden fixed inset-0 z-50 bg-background-light dark:bg-background-dark flex flex-col overflow-hidden animate-fade-in">
+			<!-- Cabecera de Pedido -->
+			<header
+				class="bg-surface dark:bg-surface-dark border-b border-border-light dark:border-border-dark p-4 flex items-center justify-between shadow-sm z-10">
+				<div class="flex items-center gap-3">
+					<button onclick="backToTables()"
+						class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-600 dark:text-slate-300">
+						<span class="material-symbols-outlined">arrow_back</span>
+					</button>
+					<div>
+						<h2 class="text-lg font-black text-slate-900 dark:text-white">Mesa <span
+								id="current-table-number"></span></h2>
+						<p class="text-[10px] font-bold text-primary-dark dark:text-primary uppercase tracking-widest">
+							Nuevo Pedido</p>
+					</div>
+				</div>
+				<div class="flex items-center gap-2">
+					<button onclick="clearOrder()"
+						class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors">
+						<span class="material-symbols-outlined">delete_sweep</span>
+					</button>
+					<button onclick="saveOrder()"
+						class="bg-primary text-primary-dark font-black px-5 py-2.5 rounded-xl shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95 transition-all">
+						<span class="material-symbols-outlined">check_circle</span>
+						<span class="hidden sm:inline">GUARDAR</span>
+					</button>
+				</div>
+			</header>
+
+			<div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+				<!-- Menú / Productos -->
+				<div class="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50/50 dark:bg-black/20">
+					<!-- Filtro Categorías -->
+					<div id="category-filter" class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-4">
+						<!-- Dinámico -->
+					</div>
+
+					<div id="menu-grid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+						<!-- Dinámico -->
+					</div>
+				</div>
+
+				<!-- Resumen de Pedido -->
+				<div
+					class="w-full lg:w-[400px] bg-surface dark:bg-surface-dark border-t lg:border-t-0 lg:border-l border-border-light dark:border-border-dark flex flex-col shadow-2xl z-20 h-[350px] lg:h-auto">
+					<div
+						class="p-4 border-b border-border-light dark:border-border-dark flex items-center justify-between bg-slate-50/30 dark:bg-white/5">
+						<h3 class="font-bold flex items-center gap-2">
+							<span class="material-symbols-outlined text-primary">shopping_cart</span>
+							Pedido Actual
+						</h3>
+						<span id="order-count-badge"
+							class="bg-primary/20 text-primary-dark dark:text-primary text-[10px] font-black px-2 py-1 rounded-full">0
+							ITEMS</span>
+					</div>
+
+					<div id="order-items" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+						<!-- Dinámico -->
+					</div>
+
+					<!-- Total y Footer -->
+					<div class="p-4 bg-slate-50 dark:bg-white/5 space-y-4">
+						<div
+							class="flex justify-between items-center bg-white dark:bg-surface-dark p-4 rounded-2xl border border-border-light dark:border-border-dark shadow-sm">
+							<span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Total</span>
+							<span id="order-total"
+								class="text-2xl font-black text-primary-dark dark:text-primary"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Notificaciones -->
+	<div id="notification-container" class="fixed bottom-6 right-6 z-[100] flex flex-col gap-2"></div>
+
+	<script src="app.js"></script>
+	<script>
+		let currentTable = null;
+		let currentOrder = { items: [] };
+		let selectedCategory = 'all';
+
+		async function init() {
+			try {
+				await loadInitialData();
+				// Simular carga para el efecto visual
+				setTimeout(() => {
+					document.getElementById('loader').style.opacity = '0';
+					setTimeout(() => document.getElementById('loader').style.display = 'none', 500);
+					renderTables();
+				}, 600);
+			} catch (e) {
+				console.error(e);
+				location.reload();
+			}
+		}
+
+		function renderTables() {
+			const container = document.getElementById('tables-grid');
+			if (!container) return;
+
+			container.innerHTML = AppState.tables.map(table => {
+				const isOccupied = table.status === 'occupied';
+				const hasOrder = !!table.currentOrder;
+
+				return `
+				<button onclick="selectTable('${table.id}')" 
+					class="relative group aspect-square rounded-3xl p-4 flex flex-col items-center justify-center transition-all duration-300 border-2 active:scale-95
+					${isOccupied
+						? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 text-amber-900 dark:text-amber-200'
+						: 'bg-white dark:bg-surface-dark border-border-light dark:border-border-dark hover:border-primary/50 text-slate-600 dark:text-slate-400'}">
+					
+					<div class="absolute top-3 right-3 w-2 h-2 rounded-full ${isOccupied ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]'}"></div>
+					
+					<span class="material-symbols-outlined text-3xl mb-2 transition-transform group-hover:scale-110">
+						${isOccupied ? 'person_pin' : 'table_restaurant'}
+					</span>
+					
+					<span class="text-lg font-black tracking-tight">${table.isTakeaway ? 'D-' + table.number : table.number}</span>
+					<span class="text-[9px] font-bold uppercase tracking-widest opacity-60 mt-1">
+						${isOccupied ? 'OCUPADA' : 'LIBRE'}
+					</span>
+
+					${hasOrder ? `
+					<div class="absolute -bottom-2 px-2 py-0.5 bg-primary text-primary-dark text-[8px] font-black rounded-full shadow-sm">
+						PEDIDO ACTIVO
+					</div>
+					` : ''}
+				</button>
+				`;
+			}).join('');
+		}
+
+		function selectTable(tableId) {
+			currentTable = AppState.tables.find(t => t.id === tableId);
+			if (!currentTable) return;
+
+			if (currentTable.currentOrder) {
+				const existingOrder = AppState.orders.find(o => o.id === currentTable.currentOrder);
+				currentOrder = existingOrder ? JSON.parse(JSON.stringify(existingOrder)) : { items: [] };
+			} else {
+				currentOrder = { items: [] };
+			}
+
+			document.getElementById('current-table-number').textContent = currentTable.number;
+			document.getElementById('table-selection-view').classList.add('hidden');
+			document.getElementById('order-view').classList.remove('hidden');
+
+			renderCategories();
+			renderMenu();
+			renderOrderItems();
+		}
+
+		function backToTables() {
+			document.getElementById('table-selection-view').classList.remove('hidden');
+			document.getElementById('order-view').classList.add('hidden');
+			currentTable = null;
+			currentOrder = { items: [] };
+			renderTables();
+		}
+
+		function renderCategories() {
+			const categories = ['all', ...new Set(AppState.menuItems.map(item => item.category))];
+			const container = document.getElementById('category-filter');
+
+			container.innerHTML = categories.map(cat => `
+				<button onclick="filterCategory('${cat}')" 
+					class="whitespace-nowrap px-6 py-2 rounded-2xl text-xs font-black uppercase tracking-widest transition-all
+					${cat === selectedCategory
+					? 'bg-primary text-primary-dark shadow-lg shadow-primary/20 scale-105'
+					: 'bg-white dark:bg-surface-dark text-slate-500 border border-border-light dark:border-border-dark'}">
+					${cat === 'all' ? '🍳 Todos' : cat}
+				</button>
+			`).join('');
+		}
+
+		function filterCategory(category) {
+			selectedCategory = category;
+			renderCategories();
+			renderMenu();
+		}
+
+		function renderMenu() {
+			const filteredItems = selectedCategory === 'all'
+				? AppState.menuItems
+				: AppState.menuItems.filter(item => item.category === selectedCategory);
+
+			const container = document.getElementById('menu-grid');
+			container.innerHTML = filteredItems
+				.filter(item => item.available)
+				.map(item => `
+				<div onclick="addToOrder('${item.id}')" 
+					class="bg-surface dark:bg-surface-dark rounded-[2rem] p-3 border border-border-light dark:border-border-dark flex flex-col gap-3 shadow-sm active:scale-95 transition-all cursor-pointer hover:border-primary/50 group">
+					<div class="relative aspect-video rounded-2xl overflow-hidden bg-slate-100 dark:bg-white/5">
+						${item.image
+						? `<img src="${item.image}" class="w-full h-full object-cover transition-transform group-hover:scale-110" alt="${item.name}">`
+						: `<div class="w-full h-full flex items-center justify-center"><span class="material-symbols-outlined text-slate-300 dark:text-slate-700 text-4xl">restaurant</span></div>`}
+						<div class="absolute bottom-2 right-2 bg-white/90 dark:bg-black/80 backdrop-blur-md px-2 py-1 rounded-lg">
+							<span class="text-xs font-black text-primary-dark dark:text-primary">${Utils.formatCurrency(item.price)}</span>
+						</div>
+					</div>
+					<div>
+						<h4 class="text-sm font-bold text-slate-900 dark:text-white leading-tight mb-1 truncate">${item.name}</h4>
+						<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${item.category}</p>
+					</div>
+				</div>
+			`).join('');
+		}
+
+		function addToOrder(itemId) {
+			const menuItem = AppState.menuItems.find(m => m.id === itemId);
+			if (!menuItem) return;
+
+			const existingItem = currentOrder.items.find(i => i.itemId === itemId);
+			if (existingItem) {
+				existingItem.quantity++;
+			} else {
+				currentOrder.items.push({
+					itemId: itemId,
+					name: menuItem.name,
+					price: menuItem.price,
+					quantity: 1,
+					notes: ''
+				});
+				// Feedback háptico visual (notificación interna pequeña)
+				Utils.showNotification(`${menuItem.name} añadido`, 'success');
+			}
+			renderOrderItems();
+		}
+
+		function renderOrderItems() {
+			const container = document.getElementById('order-items');
+			const badge = document.getElementById('order-count-badge');
+
+			badge.textContent = `${currentOrder.items.reduce((a, b) => a + b.quantity, 0)} ITEMS`;
+
+			if (currentOrder.items.length === 0) {
+				container.innerHTML = `
+				<div class="h-full flex flex-col items-center justify-center text-center p-8 opacity-30">
+					<span class="material-symbols-outlined text-6xl mb-4">restaurant_menu</span>
+					<p class="text-xs font-bold uppercase tracking-widest">El pedido está vacío</p>
+				</div>`;
+				document.getElementById('order-total').textContent = '$0.00';
+				return;
+			}
+
+			container.innerHTML = currentOrder.items.map((item, index) => `
+				<div class="bg-white dark:bg-surface-dark p-3 rounded-2xl border border-border-light dark:border-border-dark animate-fade-in">
+					<div class="flex justify-between items-start gap-3 mb-3">
+						<div class="flex-1">
+							<h4 class="text-sm font-bold text-slate-900 dark:text-white">${item.name}</h4>
+							<p class="text-xs font-bold text-primary-dark dark:text-primary">${Utils.formatCurrency(item.price * item.quantity)}</p>
+						</div>
+						<div class="flex items-center bg-slate-100 dark:bg-white/5 rounded-xl p-1">
+							<button onclick="changeQuantity(${index}, -1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-red-500 transition-colors">
+								<span class="material-symbols-outlined text-sm">remove</span>
+							</button>
+							<span class="w-8 text-center text-xs font-black">${item.quantity}</span>
+							<button onclick="changeQuantity(${index}, 1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
+								<span class="material-symbols-outlined text-sm">add</span>
+							</button>
+						</div>
+					</div>
+					<div class="relative">
+						<span class="absolute left-2 top-2 text-slate-400 material-symbols-outlined text-xs">notes</span>
+						<input type="text" placeholder="Notas (ej: sin picante)" 
+							   class="w-full bg-slate-50 dark:bg-background-dark/50 border-none rounded-lg pl-8 p-1.5 text-[10px] font-medium"
+							   onchange="updateNotes(${index}, this.value)" value="${item.notes || ''}">
+					</div>
+				</div>
+			`).join('');
+
+			const total = currentOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+			document.getElementById('order-total').textContent = Utils.formatCurrency(total);
+		}
+
+		function changeQuantity(index, delta) {
+			currentOrder.items[index].quantity += delta;
+			if (currentOrder.items[index].quantity <= 0) {
+				currentOrder.items.splice(index, 1);
+			}
+			renderOrderItems();
+		}
+
+		function updateNotes(index, notes) {
+			currentOrder.items[index].notes = notes;
+		}
+
+		function clearOrder() {
+			if (currentOrder.items.length > 0 && confirm('¿Borrar todo el pedido?')) {
+				currentOrder.items = [];
+				renderOrderItems();
+			}
+		}
+
+		async function saveOrder() {
+			if (currentOrder.items.length === 0) {
+				Utils.showNotification('El pedido está vacío', 'warning');
+				return;
+			}
+
+			// Prevenir doble click
+			const btn = event.currentTarget;
+			btn.disabled = true;
+			btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-xl">progress_activity</span>';
+
+			try {
+				const orderId = currentTable.currentOrder || Utils.generateId();
+				const total = currentOrder.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+				const order = {
+					id: orderId,
+					tableId: currentTable.id,
+					tableNumber: currentTable.number,
+					items: currentOrder.items,
+					total: total,
+					status: 'pending',
+					createdAt: currentOrder.createdAt || new Date().toISOString(),
+					updatedAt: new Date().toISOString()
+				};
+
+				// Actualizar AppState
+				const idx = AppState.orders.findIndex(o => o.id === orderId);
+				if (idx >= 0) AppState.orders[idx] = order;
+				else AppState.orders.push(order);
+
+				currentTable.status = 'occupied';
+				currentTable.currentOrder = orderId;
+				const tIdx = AppState.tables.findIndex(t => t.id === currentTable.id);
+				AppState.tables[tIdx] = currentTable;
+
+				// Guardar
+				await API.save('orders', AppState.orders);
+				await API.save('tables', AppState.tables);
+
+				Utils.showNotification('¡Pedido Guardado!', 'success');
+				backToTables();
+			} catch (e) {
+				console.error(e);
+				alert('Error al guardar. Revisa tu internet.');
+			} finally {
+				btn.disabled = false;
+				btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> GUARDAR';
+			}
+		}
+
+		function logout() {
+			if (confirm('¿Cerrar sesión?')) {
+				localStorage.removeItem('userSession');
+				window.location.href = '/login.html';
+			}
+		}
+
+		// Iniciar app
+		document.addEventListener('DOMContentLoaded', init);
+	</script>
+</body>
+
+</html>

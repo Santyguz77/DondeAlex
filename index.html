@@ -1,0 +1,4595 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Donde Alex - Panel de Control</title>
+	<link rel="icon" href="/icon-192.png" type="image/png">
+	<link rel="stylesheet" href="styles.css">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+		rel="stylesheet">
+	<link rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" />
+	<script>
+		tailwind.config = {
+			darkMode: "class",
+			theme: {
+				extend: {
+					colors: {
+						"primary": "#47eb7e",
+						"primary-dark": "#0a5c2b",
+						"background-light": "#f6f8f6",
+						"background-dark": "#112116",
+						"surface": "#ffffff",
+						"surface-dark": "#1c2e22",
+						"border-light": "#e2e8f0",
+						"border-dark": "#2d3748",
+					},
+					fontFamily: {
+						"display": ["Plus Jakarta Sans", "sans-serif"]
+					},
+					borderRadius: {
+						"DEFAULT": "0.5rem",
+						"lg": "1rem",
+						"xl": "1.5rem",
+						"full": "9999px"
+					},
+				},
+			},
+		}
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.27/jspdf.plugin.autotable.min.js"></script>
+	<style>
+		body {
+			font-family: 'Plus Jakarta Sans', sans-serif;
+		}
+
+		.material-symbols-outlined {
+			font-variation-settings:
+				'FILL' 0,
+				'wght' 400,
+				'GRAD' 0,
+				'opsz' 24
+		}
+
+		.active-nav .material-symbols-outlined {
+			font-variation-settings: 'FILL' 1;
+		}
+
+		.hamburger {
+			display: none;
+			position: fixed;
+			top: 15px;
+			left: 15px;
+			z-index: 1001;
+			background: #ffffff;
+			border: none;
+			color: #000000;
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			cursor: pointer;
+			box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+			transition: transform 0.3s;
+		}
+
+		.hamburger span {
+			display: block;
+			height: 2px;
+			width: 24px;
+			border-radius: 2px;
+			background: #000000;
+			transition: transform 0.3s;
+		}
+
+		.hamburger span+span {
+			margin-top: 6px;
+		}
+
+		.hamburger:active {
+			transform: scale(0.95);
+		}
+
+		.mobile-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.7);
+			z-index: 999;
+		}
+
+		.mobile-overlay.active {
+			display: block;
+		}
+
+		.sidebar.mobile-open {
+			transform: translateX(0) !important;
+		}
+
+		@media (max-width: 768px) {
+			.hamburger {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.sidebar {
+				position: fixed;
+				left: 0;
+				top: 0;
+				height: 100vh;
+				transform: translateX(-100%);
+				transition: transform 0.3s ease;
+				z-index: 1000;
+				width: 260px;
+			}
+
+			.main {
+				margin-left: 0;
+				padding: 80px 15px 20px 15px;
+			}
+		}
+
+		.dashboard-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 20px;
+			margin-bottom: 30px;
+		}
+
+		.stat-card {
+			padding: 25px;
+			border-radius: var(--radius);
+			box-shadow: var(--shadow);
+			border: 1px solid rgba(0, 0, 0, 0.05);
+			transition: transform 0.3s ease;
+		}
+
+		.stat-card:hover {
+			transform: translateY(-4px);
+		}
+
+		.stat-card-red {
+			background-color: #FEF2F2;
+			border-color: #FEE2E2;
+		}
+
+		.stat-card-orange {
+			background-color: #FFF7ED;
+			border-color: #FFEDD5;
+		}
+
+		.stat-card-green {
+			background-color: #F0FDF4;
+			border-color: #DCFCE7;
+		}
+
+		.stat-card-yellow {
+			background-color: #FEFCE8;
+			border-color: #FEF9C3;
+		}
+
+		.stat-card h3 {
+			font-size: 12px;
+			color: var(--muted);
+			text-transform: uppercase;
+			font-weight: 700;
+			letter-spacing: 0.05em;
+			margin-bottom: 8px;
+		}
+
+		.stat-card .value {
+			font-size: 40px;
+			font-weight: 800;
+			color: var(--text);
+			letter-spacing: -0.02em;
+		}
+
+		.stat-card-red .value {
+			color: var(--accent);
+		}
+
+		.stat-card-orange .value {
+			color: var(--warning);
+		}
+
+		.stat-card-green .value {
+			color: #4ade80;
+		}
+
+		.stat-card h3 {
+			font-size: 14px;
+			color: var(--muted);
+			text-transform: uppercase;
+			margin-bottom: 10px;
+		}
+
+		.stat-card .value {
+			font-size: 36px;
+			font-weight: 700;
+			color: var(--accent);
+		}
+
+		.section {
+			display: none;
+		}
+
+		.section.active {
+			display: block;
+		}
+
+		.order-card {
+			background: rgba(0, 0, 0, 0.3);
+			padding: 15px;
+			border-radius: 8px;
+			margin-bottom: 15px;
+			border-left: 4px solid var(--accent);
+		}
+
+		.order-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		.order-items-list {
+			margin: 10px 0;
+			padding: 10px;
+			background: rgba(0, 0, 0, 0.2);
+			border-radius: 6px;
+		}
+
+		.order-item-line {
+			display: flex;
+			justify-content: space-between;
+			padding: 5px 0;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		}
+
+		.close-cash-summary {
+			background: linear-gradient(135deg, var(--success), #388e3c);
+			color: #fff;
+			padding: 30px;
+			border-radius: 12px;
+			margin-top: 20px;
+		}
+
+		.close-cash-summary h2 {
+			margin-bottom: 20px;
+		}
+
+		.close-cash-line {
+			display: flex;
+			justify-content: space-between;
+			padding: 10px 0;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+			font-size: 18px;
+		}
+
+		.close-cash-total {
+			font-size: 32px;
+			font-weight: 700;
+			margin-top: 20px;
+			text-align: right;
+		}
+
+		@keyframes pulse {
+
+			0%,
+			100% {
+				opacity: 1;
+				transform: scale(1);
+			}
+
+			50% {
+				opacity: 0.5;
+				transform: scale(1.2);
+			}
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateX(400px);
+				opacity: 0;
+			}
+
+			to {
+				transform: translateX(0);
+				opacity: 1;
+			}
+		}
+
+		@keyframes slideOut {
+			from {
+				transform: translateX(0);
+				opacity: 1;
+			}
+
+			to {
+				transform: translateX(400px);
+				opacity: 0;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<script>
+		// Verificar sesión de admin
+		const session = localStorage.getItem('userSession');
+		if (!session) {
+			window.location.href = '/login.html';
+		} else {
+			const userData = JSON.parse(session);
+			if (userData.type !== 'admin') {
+				alert('ADVERTENCIA: Acceso denegado. Esta página es solo para administradores.');
+				window.location.href = '/login.html';
+			}
+		}
+	</script>
+
+	<body
+		class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex overflow-hidden">
+
+		<button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+			<span></span>
+			<span></span>
+			<span></span>
+		</button>
+
+		<!-- Overlay para cerrar menú en móvil -->
+		<div class="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+		<div class="app w-full flex">
+			<!-- Sidebar -->
+			<aside id="sidebar"
+				class="w-64 bg-surface dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex-shrink-0 flex flex-col h-screen fixed left-0 top-0 z-10 transition-colors duration-200 lg:translate-x-0 -translate-x-full lg:static">
+				<!-- Logo / User Profile -->
+				<div class="p-6 border-b border-border-light dark:border-border-dark flex items-center gap-4">
+					<div class="relative w-10 h-10 rounded-full bg-cover bg-center ring-2 ring-primary/20"
+						style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC-berUhfEyPupX0hLEQ0OznM3FDMP5RWJE8VtzeN5q7LaodvvKCCfAVdp1uRXYqea2pAjq9XEDoD6vBd4K8OkQ1QhaH7fv4sJhn1_IBkSjeiP7yOIAGjeXf4eLume-IULSTOekCcicT6Mn6Q5u1dlRV2nAaNhtELa03FOrLsU7V9kS3NGPRX-Y3c-_42_w1gg49g3kC2a_81tWThekjiIN96ioeFE4arST3RwHiXQtAEU01gc6VKwXNYoNq6Us7myj1iMfM5SkW4');">
+					</div>
+					<div class="flex flex-col">
+						<h1 class="text-sm font-bold text-slate-900 dark:text-slate-100">Donde Alex</h1>
+						<p class="text-xs text-slate-500 dark:text-slate-400">Restaurant Manager</p>
+					</div>
+				</div>
+				<!-- Navigation -->
+				<nav class="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-1 menu">
+					<a class="nav-item active-nav flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary-dark dark:text-primary transition-all group cursor-pointer"
+						onclick="showSection('dashboard')">
+						<span
+							class="material-symbols-outlined text-primary-dark dark:text-primary group-hover:scale-105 transition-transform">dashboard</span>
+						<span class="text-sm font-medium">Dashboard</span>
+					</a>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="showSection('tables')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">table_restaurant</span>
+						<span class="text-sm font-medium">Mesas</span>
+					</a>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="showSection('orders')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">restaurant</span>
+						<span class="text-sm font-medium">Pedidos</span>
+					</a>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="window.open('cocina.html', '_blank')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">soup_kitchen</span>
+						<span class="text-sm font-medium">Cocina</span>
+					</a>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="showSection('menu-config')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">menu_book</span>
+						<span class="text-sm font-medium">Menú</span>
+					</a>
+					<div class="my-2 border-t border-border-light dark:border-border-dark mx-3"></div>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="showSection('transactions')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">attach_money</span>
+						<span class="text-sm font-medium">Finanzas</span>
+					</a>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="showSection('profitability')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">trending_up</span>
+						<span class="text-sm font-medium">Rentabilidad</span>
+					</a>
+					<a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-slate-200 transition-all group cursor-pointer"
+						onclick="showSection('system-config')">
+						<span
+							class="material-symbols-outlined group-hover:scale-105 transition-transform">settings</span>
+						<span class="text-sm font-medium">Configuración</span>
+					</a>
+					<div class="mt-auto">
+						<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-all group cursor-pointer"
+							onclick="logout()">
+							<span
+								class="material-symbols-outlined group-hover:scale-105 transition-transform">logout</span>
+							<span class="text-sm font-medium">Cerrar Sesión</span>
+						</a>
+					</div>
+				</nav>
+				<!-- Sidebar Footer -->
+				<div class="p-4">
+					<div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4">
+						<div class="flex items-center gap-2 mb-2 text-primary-dark dark:text-primary">
+							<span class="material-symbols-outlined text-sm">tips_and_updates</span>
+							<span class="text-xs font-bold uppercase tracking-wider">Pro Tip</span>
+						</div>
+						<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+							Review inventory to prepare for the rush.
+						</p>
+					</div>
+				</div>
+			</aside>
+
+			<!-- Main Content -->
+			<main class="flex-1 p-8 lg:p-12 overflow-y-auto h-screen scroll-smooth">
+				<div class="max-w-7xl mx-auto space-y-10">
+					<!-- Dashboard -->
+					<div id="dashboard" class="section active">
+						<!-- Header -->
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Dashboard
+								</h2>
+								<div class="flex items-center gap-2 mt-1">
+									<p class="text-slate-500 dark:text-slate-400">Bienvenido de nuevo, Alex. Esto es lo
+										que sucede hoy.</p>
+									<span
+										class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-50 text-green-600 border border-green-100">
+										<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+										LIVE
+									</span>
+								</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="flex items-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-slate-300 dark:hover:border-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors shadow-sm"
+									onclick="refreshData()">
+									<span class="material-symbols-outlined text-[20px]">refresh</span>
+									Actualizar
+								</button>
+								<div class="flex items-center gap-2">
+									<button
+										class="bg-primary text-primary-dark font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] shadow-sm flex items-center gap-2"
+										onclick="createDeliveryOrder()">
+										<span class="material-symbols-outlined text-[20px]">delivery_dining</span>
+										Nuevo Domicilio
+									</button>
+									<button
+										class="bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-slate-300 dark:hover:border-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors shadow-sm flex items-center gap-2"
+										onclick="showSection('tables')">
+										<span class="material-symbols-outlined text-[20px]">add</span>
+										Pedido Salón
+									</button>
+								</div>
+							</div>
+						</header>
+
+						<!-- Metrics Grid -->
+						<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+							<!-- Revenue Card -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow group">
+								<div class="flex justify-between items-start mb-4">
+									<div
+										class="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400">
+										<span class="material-symbols-outlined">payments</span>
+									</div>
+									<span
+										class="flex items-center text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full">
+										<span class="material-symbols-outlined text-[14px] mr-1">trending_up</span> +12%
+									</span>
+								</div>
+								<div>
+									<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Ventas Hoy
+									</p>
+									<h3 class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-revenue">
+										$0.00</h3>
+								</div>
+							</div>
+
+							<!-- Orders Card -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow group">
+								<div class="flex justify-between items-start mb-4">
+									<div
+										class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
+										<span class="material-symbols-outlined">room_service</span>
+									</div>
+									<span
+										class="flex items-center text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+										<span class="material-symbols-outlined text-[14px] mr-1">pending_actions</span>
+										Activos
+									</span>
+								</div>
+								<div>
+									<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Pedidos
+										Activos</p>
+									<h3 class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-orders">0
+									</h3>
+								</div>
+							</div>
+
+							<!-- Tables Card -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow group">
+								<div class="flex justify-between items-start mb-4">
+									<div
+										class="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-orange-600 dark:text-orange-400">
+										<span class="material-symbols-outlined">table_restaurant</span>
+									</div>
+									<span
+										class="flex items-center text-xs font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded-full">
+										<span class="material-symbols-outlined text-[14px] mr-1">group</span> Ocupación
+									</span>
+								</div>
+								<div>
+									<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Mesas
+										Ocupadas</p>
+									<h3 class="text-2xl font-bold text-slate-900 dark:text-white" id="stat-tables">
+										0<span class="text-slate-400 text-lg font-normal">/20</span></h3>
+								</div>
+							</div>
+
+							<!-- Staff Card -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow group">
+								<div class="flex justify-between items-start mb-4">
+									<div
+										class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-600 dark:text-purple-400">
+										<span class="material-symbols-outlined">badge</span>
+									</div>
+									<span
+										class="flex items-center text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
+										Estable
+									</span>
+								</div>
+								<div>
+									<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">Staff en
+										Turno</p>
+									<h3 class="text-2xl font-bold text-slate-900 dark:text-white">8</h3>
+								</div>
+							</div>
+						</section>
+
+						<!-- Table Status Section -->
+						<section>
+							<div class="flex items-center justify-between mb-6">
+								<h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+									Estado de Mesas
+									<span
+										class="text-xs font-normal text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full tracking-wide">Tiempo
+										Real</span>
+								</h3>
+								<div class="flex items-center gap-4 text-xs font-semibold">
+									<div class="flex items-center gap-2">
+										<span
+											class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"></span>
+										<span>Libre</span>
+									</div>
+									<div class="flex items-center gap-2">
+										<span
+											class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]"></span>
+										<span>Ocupada</span>
+									</div>
+								</div>
+							</div>
+							<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="table-grid">
+								<!-- Se genera dinámicamente con JS -->
+							</div>
+						</section>
+					</div>
+
+					<!-- Mesas -->
+					<div id="tables" class="section">
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Gestión de
+									Mesas</h2>
+								<p class="text-slate-500 dark:text-slate-400 mt-1">Configura la disposición y capacidad
+									de tu salón.</p>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="bg-primary text-primary-dark font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] shadow-sm flex items-center gap-2"
+									onclick="openTableModal()">
+									<span class="material-symbols-outlined text-[20px]">add</span>
+									Agregar Mesa
+								</button>
+							</div>
+						</header>
+						<div
+							class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+							<div class="tables-grid" id="tables-list"></div>
+						</div>
+					</div>
+
+					<!-- Pedidos -->
+					<div id="orders" class="section">
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Pedidos
+									Activos
+								</h2>
+								<div class="flex items-center gap-2 mt-1">
+									<p class="text-slate-500 dark:text-slate-400">Monitorea y factura las órdenes en
+										curso.
+									</p>
+									<span
+										class="flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100">
+										<span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+										LIVE
+									</span>
+								</div>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="flex items-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-slate-300 dark:hover:border-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors shadow-sm"
+									onclick="refreshData()">
+									<span class="material-symbols-outlined text-[20px]">refresh</span>
+									Actualizar
+								</button>
+								<button
+									class="flex items-center gap-2 bg-primary text-primary-dark font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] shadow-sm"
+									onclick="window.open('cocina.html', '_blank')">
+									<span class="material-symbols-outlined text-[20px]">soup_kitchen</span>
+									Pantalla de Cocina
+								</button>
+							</div>
+						</header>
+						<div id="orders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+					</div>
+
+					<!-- Configuración de Menú -->
+					<div id="menu-config" class="section">
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Gestión del
+									Menú</h2>
+								<p class="text-slate-500 dark:text-slate-400 mt-1">Administra tus productos, categorías
+									y
+									precios.</p>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="bg-primary text-primary-dark font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] shadow-sm flex items-center gap-2"
+									onclick="openMenuItemModal()">
+									<span class="material-symbols-outlined text-[20px]">add</span>
+									Nuevo Producto
+								</button>
+							</div>
+						</header>
+
+						<div
+							class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
+							<div class="overflow-x-auto">
+								<table class="w-full text-left border-collapse" id="menu-table">
+									<thead>
+										<tr
+											class="bg-slate-50 dark:bg-slate-800/50 border-b border-border-light dark:border-border-dark">
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+												Producto</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+												Categoría</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+												Costo</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+												Precio</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right text-primary-dark dark:text-primary">
+												Ganancia</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+												Estado</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+												Acciones</th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-border-light dark:divide-border-dark"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Finanzas -->
+					<div id="transactions" class="section">
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Finanzas
+								</h2>
+								<p class="text-slate-500 dark:text-slate-400 mt-1">Historial de transacciones y
+									rentabilidad.</p>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="flex items-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-slate-300 dark:hover:border-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors shadow-sm"
+									onclick="exportFinanceCSV()">
+									<span class="material-symbols-outlined text-[20px]">download</span>
+									CSV
+								</button>
+								<button
+									class="flex items-center gap-2 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark hover:border-slate-300 dark:hover:border-slate-600 px-4 py-2 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 transition-colors shadow-sm"
+									onclick="exportFinancePDF()">
+									<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+									PDF
+								</button>
+							</div>
+						</header>
+
+						<div class="space-y-6">
+							<!-- Filtros -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+									<div class="space-y-1.5">
+										<label
+											class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desde</label>
+										<input type="date" id="finance-filter-start"
+											onchange="updateFinanceFilter('startDate', this.value)"
+											class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+									</div>
+									<div class="space-y-1.5">
+										<label
+											class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hasta</label>
+										<input type="date" id="finance-filter-end"
+											onchange="updateFinanceFilter('endDate', this.value)"
+											class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+									</div>
+									<div class="space-y-1.5">
+										<label
+											class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipo</label>
+										<select id="finance-filter-type"
+											onchange="updateFinanceFilter('type', this.value)"
+											class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+											<option value="all">Todos</option>
+											<option value="sale">Ventas</option>
+											<option value="income">Ingresos</option>
+											<option value="expense">Gastos</option>
+											<option value="adjustment">Ajustes</option>
+											<option value="other">Otros</option>
+										</select>
+									</div>
+									<div class="space-y-1.5">
+										<label
+											class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Método</label>
+										<select id="finance-filter-method"
+											onchange="updateFinanceFilter('method', this.value)"
+											class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all">
+											<option value="all">Todos</option>
+										</select>
+									</div>
+									<div class="flex items-end">
+										<button
+											class="w-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 px-4 py-2 rounded-lg text-sm font-bold transition-all"
+											onclick="resetFinanceFilters()">
+											Limpiar Filtros
+										</button>
+									</div>
+								</div>
+							</div>
+
+							<!-- Stats -->
+							<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+								<div
+									class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+									<p
+										class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+										Ingresos</p>
+									<h3 class="text-2xl font-bold text-slate-900 dark:text-white"
+										id="finance-total-income">$0</h3>
+									<p class="text-xs text-slate-400 mt-2" id="finance-total-count">0 transacciones</p>
+								</div>
+								<div
+									class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+									<p
+										class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+										Rentabilidad</p>
+									<h3 class="text-2xl font-bold text-primary-dark dark:text-primary"
+										id="finance-total-profit-summary">$0</h3>
+									<p class="text-xs text-slate-400 mt-2">Ganancia Neta Estimada</p>
+								</div>
+								<div
+									class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+									<p
+										class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">
+										Balance Neto</p>
+									<h3 class="text-2xl font-bold text-slate-900 dark:text-white"
+										id="finance-total-net">$0</h3>
+									<p class="text-xs text-slate-400 mt-2">Ingresos - Gastos</p>
+								</div>
+							</div>
+
+							<!-- Tabs & Summary -->
+							<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+								<div id="finance-period-tabs"
+									class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
+									<button class="finance-tab px-4 py-2 rounded-lg text-sm font-bold transition-all"
+										data-mode="daily" onclick="setFinanceViewMode('daily')">Diario</button>
+									<button class="finance-tab px-4 py-2 rounded-lg text-sm font-bold transition-all"
+										data-mode="weekly" onclick="setFinanceViewMode('weekly')">Semanal</button>
+									<button class="finance-tab px-4 py-2 rounded-lg text-sm font-bold transition-all"
+										data-mode="monthly" onclick="setFinanceViewMode('monthly')">Mensual</button>
+									<button class="finance-tab px-4 py-2 rounded-lg text-sm font-bold transition-all"
+										data-mode="custom" onclick="setFinanceViewMode('custom')">Personalizado</button>
+								</div>
+								<p id="finance-period-summary"
+									class="text-xs font-medium text-slate-500 dark:text-slate-400 italic"></p>
+							</div>
+
+							<!-- Table -->
+							<div
+								class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
+								<div class="overflow-x-auto">
+									<table class="w-full text-left border-collapse" id="transactions-table">
+										<thead>
+											<tr
+												class="bg-slate-50 dark:bg-slate-800/50 border-b border-border-light dark:border-border-dark">
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+													Fecha</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+													Mesa</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+													Concepto</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+													Tipo</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+													Método</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+													Monto</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+													Detalle</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+													Acciones</th>
+											</tr>
+										</thead>
+										<tbody class="divide-y divide-border-light dark:divide-border-dark"></tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Cierre de Caja -->
+					<div id="close-cash" class="section">
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Cierre de
+									Caja</h2>
+								<p class="text-slate-500 dark:text-slate-400 mt-1">Genera y revisa los cierres diarios
+									de
+									operaciones.</p>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="bg-amber-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] shadow-sm flex items-center gap-2"
+									onclick="generateCloseCash()">
+									<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+									Generar Cierre Actual
+								</button>
+								<button
+									class="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] flex items-center gap-2"
+									onclick="viewClosureHistory()">
+									<span class="material-symbols-outlined text-[20px]">history</span>
+									Historial
+								</button>
+							</div>
+						</header>
+
+						<div
+							class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+							<div id="close-cash-content">
+								<p class="text-center text-slate-400 py-10 italic">
+									Haz clic en "Generar Cierre Actual" para ver el resumen del día
+								</p>
+							</div>
+						</div>
+
+						<div id="closure-history" class="mt-8 hidden">
+							<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Historial de Cierres</h3>
+							<div
+								class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
+								<div class="overflow-x-auto">
+									<table class="w-full text-left border-collapse" id="closures-table">
+										<thead>
+											<tr
+												class="bg-slate-50 dark:bg-slate-800/50 border-b border-border-light dark:border-border-dark">
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+													Fecha</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+													Transacciones</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+													Total</th>
+												<th
+													class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+													Acciones</th>
+											</tr>
+										</thead>
+										<tbody class="divide-y divide-border-light dark:divide-border-dark"></tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Rentabilidad -->
+					<div id="profitability" class="section">
+						<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+							<div>
+								<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Análisis de
+									Rentabilidad</h2>
+								<p class="text-slate-500 dark:text-slate-400 mt-1">Estadísticas detalladas de
+									rendimiento por
+									producto.</p>
+							</div>
+							<div class="flex items-center gap-3">
+								<button
+									class="bg-primary text-primary-dark font-bold px-4 py-2 rounded-lg text-sm transition-all hover:scale-[1.02] shadow-sm flex items-center gap-2"
+									onclick="generateProfitabilityReport()">
+									<span class="material-symbols-outlined text-[20px]">refresh</span>
+									Actualizar Datos
+								</button>
+							</div>
+						</header>
+
+						<div id="cost-warning"
+							class="hidden bg-amber-50 dark:bg-amber-900/10 border-2 border-amber-200 dark:border-amber-800/50 p-4 rounded-xl mb-6 flex items-start gap-4">
+							<span class="material-symbols-outlined text-amber-500 mt-0.5">warning</span>
+							<div>
+								<strong class="text-amber-800 dark:text-amber-400 block mb-1">Algunos productos no
+									tienen costo
+									configurado</strong>
+								<p class="text-sm text-amber-700/80 dark:text-amber-400/70">
+									Para obtener datos precisos de rentabilidad, edita tus productos en la sección
+									<strong>Menú</strong> y agrega el costo de producción de cada uno.
+								</p>
+							</div>
+						</div>
+
+						<!-- Métricas Principales -->
+						<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-10">
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<p
+									class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+									Ganancia Hoy</p>
+								<h3 class="text-xl font-bold text-slate-900 dark:text-white" id="profit-today">$0</h3>
+								<p class="text-[10px] text-slate-400 mt-2" id="profit-today-change">-</p>
+							</div>
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<p
+									class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+									Ganancia Mes</p>
+								<h3 class="text-xl font-bold text-slate-900 dark:text-white" id="profit-month">$0</h3>
+								<p class="text-[10px] text-slate-400 mt-2" id="orders-month-count">-</p>
+							</div>
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<p
+									class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+									Margen Promedio</p>
+								<h3 class="text-xl font-bold text-slate-900 dark:text-white" id="margin-avg">0%</h3>
+								<p class="text-[10px] text-slate-400 mt-2">Eficiencia operativa</p>
+							</div>
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<p
+									class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+									Producto Top</p>
+								<h3 class="text-sm font-bold text-slate-900 dark:text-white truncate"
+									id="most-profitable">-</h3>
+								<p class="text-[10px] text-slate-400 mt-2" id="most-profitable-profit">-</p>
+							</div>
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<p
+									class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+									Más Vendido</p>
+								<h3 class="text-sm font-bold text-slate-900 dark:text-white truncate" id="most-sold">-
+								</h3>
+								<p class="text-[10px] text-slate-400 mt-2" id="most-sold-quantity">-</p>
+							</div>
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<p
+									class="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase tracking-wider mb-1">
+									Ticket Prom.</p>
+								<h3 class="text-xl font-bold text-slate-900 dark:text-white" id="avg-ticket">$0</h3>
+								<p class="text-[10px] text-slate-400 mt-2" id="total-tickets">-</p>
+							</div>
+						</div>
+
+						<!-- Gráficas -->
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+							<!-- Ventas por Día (Últimos 7 días) -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<h3
+									class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+									<span class="material-symbols-outlined text-primary">calendar_today</span>
+									Ventas por Día (Últimos 7 días)
+								</h3>
+								<canvas id="sales-by-day-chart" style="max-height: 300px;"></canvas>
+							</div>
+
+							<!-- Top 5 Productos Más Vendidos -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<h3
+									class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+									<span class="material-symbols-outlined text-primary">leaderboard</span>
+									Top 5 Productos Más Vendidos
+								</h3>
+								<canvas id="top-products-chart" style="max-height: 300px;"></canvas>
+							</div>
+						</div>
+
+						<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+							<!-- Ganancias por Mes -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<h3
+									class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+									<span class="material-symbols-outlined text-primary">show_chart</span>
+									Ganancias Mensuales
+								</h3>
+								<canvas id="profit-by-month-chart" style="max-height: 300px;"></canvas>
+							</div>
+
+							<!-- Distribución de Ventas por Categoría -->
+							<div
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+								<h3
+									class="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+									<span class="material-symbols-outlined text-primary">pie_chart</span>
+									Ventas por Categoría
+								</h3>
+								<canvas id="category-chart" style="max-height: 300px;"></canvas>
+							</div>
+						</div>
+
+						<!-- Tabla Detallada de Rentabilidad -->
+						<div
+							class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
+							<div class="p-6 border-b border-border-light dark:border-border-dark">
+								<h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+									<span class="material-symbols-outlined text-primary">analytics</span>
+									Rentabilidad Detallada por Producto
+								</h3>
+							</div>
+							<div class="overflow-x-auto">
+								<table class="w-full text-left border-collapse" id="profitability-table">
+									<thead>
+										<tr
+											class="bg-slate-50 dark:bg-slate-800/50 border-b border-border-light dark:border-border-dark">
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+												Producto</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+												Unidades Vendidas</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+												Costo Total</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+												Ventas Totales</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">
+												Ganancia Total</th>
+											<th
+												class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">
+												Margen</th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-border-light dark:divide-border-dark"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Configuración del Sistema -->
+				<div id="system-config" class="section">
+					<header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+						<div>
+							<h2 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Configuración
+							</h2>
+							<p class="text-slate-500 dark:text-slate-400 mt-1">Manejo global del sistema y datos.</p>
+						</div>
+					</header>
+
+					<div
+						class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-red-100 dark:border-red-900/30 overflow-hidden shadow-sm mb-6">
+						<h3 class="text-lg font-bold text-red-600 dark:text-red-400 flex items-center gap-2 mb-4">
+							<span class="material-symbols-outlined">warning</span>
+							Zona de Peligro
+						</h3>
+						<p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
+							Estas acciones son <strong>irreversibles</strong>. Úsalas con precaución.
+						</p>
+
+						<div
+							class="p-6 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-100 dark:border-red-900/20">
+							<h4 class="text-sm font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2">
+								Limpiar Datos de Ventas
+							</h4>
+							<p class="text-xs text-red-600 dark:text-red-400/80 mb-4 leading-relaxed">
+								Elimina todas las órdenes, transacciones y cierres de caja. <strong>NO elimina</strong>
+								productos del menú ni meseros.
+							</p>
+							<button
+								class="bg-red-600 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all hover:bg-red-700 active:scale-95 flex items-center gap-2"
+								onclick="resetSalesData()">
+								<span class="material-symbols-outlined text-[20px]">delete_forever</span>
+								Limpiar Todos los Datos de Ventas
+							</button>
+						</div>
+					</div>
+
+					<div
+						class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm mb-6">
+						<h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
+							<span class="material-symbols-outlined text-primary">backup</span>
+							Copia de Seguridad
+						</h3>
+						<p class="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
+							Descarga un archivo con todos los datos del sistema para guardarlo como respaldo.
+						</p>
+						<button
+							class="bg-primary text-primary-dark font-bold px-6 py-2.5 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-sm flex items-center gap-2"
+							onclick="downloadBackup()">
+							<span class="material-symbols-outlined text-[20px]">download</span>
+							Descargar Backup de Datos
+						</button>
+					</div>
+
+					<div
+						class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
+						<h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-6">
+							<span class="material-symbols-outlined text-primary">analytics</span>
+							Información del Sistema
+						</h3>
+						<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+							<div
+								class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-border-light dark:border-border-dark">
+								<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Productos
+									en Menú
+								</p>
+								<p class="text-2xl font-bold text-primary-dark dark:text-primary" id="info-menu-items">0
+								</p>
+							</div>
+							<div
+								class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-border-light dark:border-border-dark">
+								<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Mesas
+									Configuradas</p>
+								<p class="text-2xl font-bold text-primary-dark dark:text-primary" id="info-tables">0</p>
+							</div>
+							<div
+								class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-border-light dark:border-border-dark">
+								<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Órdenes
+									Totales
+								</p>
+								<p class="text-2xl font-bold text-primary-dark dark:text-primary" id="info-orders">0</p>
+							</div>
+							<div
+								class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-border-light dark:border-border-dark">
+								<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Meseros
+									Registrados</p>
+								<p class="text-2xl font-bold text-primary-dark dark:text-primary" id="info-waiters">0
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+		</div> <!-- Close section -->
+		</div> <!-- Close max-w-7xl -->
+		</main> <!-- Close main -->
+
+		<!-- Modal Mesa -->
+		<div id="table-modal"
+			class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 [&.show]:opacity-100 [&.show]:pointer-events-auto">
+			<div
+				class="bg-surface dark:bg-surface-dark w-full max-w-md rounded-2xl shadow-2xl border border-border-light dark:border-border-dark overflow-hidden transform scale-95 transition-transform duration-300 [.show_&]:scale-100">
+				<div class="p-6 border-b border-border-light dark:border-border-dark flex items-center justify-between">
+					<h3 id="table-modal-title" class="text-xl font-bold text-slate-900 dark:text-white">Nueva Mesa</h3>
+					<button
+						class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						onclick="closeTableModal()">
+						<span class="material-symbols-outlined text-[20px]">close</span>
+					</button>
+				</div>
+				<div class="p-6 space-y-4">
+					<div class="grid grid-cols-2 gap-4">
+						<div class="space-y-1.5">
+							<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Número</label>
+							<input type="number" id="table-number"
+								class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+								placeholder="1">
+						</div>
+						<div class="space-y-1.5">
+							<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Capacidad</label>
+							<input type="number" id="table-capacity"
+								class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+								placeholder="4">
+						</div>
+					</div>
+				</div>
+				<div
+					class="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-border-light dark:border-border-dark flex gap-3">
+					<button
+						class="flex-1 bg-primary text-primary-dark font-bold py-3 rounded-xl transition-all hover:scale-[1.02] shadow-sm flex items-center justify-center gap-2"
+						onclick="saveTable()">
+						<span class="material-symbols-outlined text-[20px]">check_circle</span> Guardar
+					</button>
+					<button
+						class="flex-1 bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 font-bold py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+						onclick="closeTableModal()">
+						Cancelar
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal Producto Menú -->
+		<div id="menu-item-modal"
+			class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 [&.show]:opacity-100 [&.show]:pointer-events-auto">
+			<div
+				class="bg-surface dark:bg-surface-dark w-full max-w-lg rounded-2xl shadow-2xl border border-border-light dark:border-border-dark overflow-hidden transform scale-95 transition-transform duration-300 [.show_&]:scale-100">
+				<div class="p-6 border-b border-border-light dark:border-border-dark flex items-center justify-between">
+					<h3 id="menu-item-modal-title"
+						class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Nuevo Producto</h3>
+					<button
+						class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						onclick="closeMenuItemModal()">
+						<span class="material-symbols-outlined text-[20px]">close</span>
+					</button>
+				</div>
+
+				<div class="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+					<div class="space-y-1.5">
+						<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Nombre del
+							Producto</label>
+						<input type="text" id="item-name"
+							class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+							placeholder="Ej: Hamburguesa Clásica">
+					</div>
+
+					<div class="space-y-1.5">
+						<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Descripción
+							(Opcional)</label>
+						<textarea id="item-description" rows="2"
+							class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none"
+							placeholder="Ingredientes, preparación..."></textarea>
+					</div>
+
+					<div class="grid grid-cols-2 gap-4">
+						<div class="space-y-1.5">
+							<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Categoría</label>
+							<input type="text" id="item-category"
+								class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+								placeholder="Ej: Bebidas">
+						</div>
+						<div class="space-y-1.5">
+							<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Disponible</label>
+							<div class="flex items-center h-10 mt-1">
+								<label class="relative inline-flex items-center cursor-pointer">
+									<input type="checkbox" id="item-available" checked class="sr-only peer">
+									<div
+										class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary">
+									</div>
+									<span
+										class="ml-3 text-sm font-medium text-slate-600 dark:text-slate-300">Visible</span>
+								</label>
+							</div>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-4">
+						<div class="space-y-1.5">
+							<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Costo
+								Producción</label>
+							<input type="number" id="item-cost"
+								class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+								placeholder="0.00" step="0.01" oninput="updateProfitPreview()">
+						</div>
+						<div class="space-y-1.5">
+							<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Precio
+								Venta</label>
+							<input type="number" id="item-price"
+								class="w-full bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-bold text-primary-dark dark:text-primary"
+								placeholder="0.00" step="0.01" oninput="updateProfitPreview()">
+						</div>
+					</div>
+
+					<div id="profit-preview" class="hidden p-4 rounded-xl bg-primary/5 border border-primary/20">
+						<div class="flex justify-between items-center text-sm mb-1">
+							<span class="text-slate-500 font-medium">Ganancia por unidad:</span>
+							<strong id="profit-amount" class="text-primary-dark dark:text-primary">$0.00</strong>
+						</div>
+						<div class="flex justify-between items-center text-sm">
+							<span class="text-slate-500 font-medium">Margen operativo:</span>
+							<strong id="profit-margin" class="text-primary-dark dark:text-primary">0%</strong>
+						</div>
+					</div>
+
+					<div class="space-y-3">
+						<label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Imagen del
+							Producto</label>
+						<div class="flex items-center gap-4">
+							<label class="flex-1 cursor-pointer">
+								<div
+									class="flex flex-col items-center justify-center py-4 bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-border-light dark:border-border-dark rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group">
+									<span
+										class="material-symbols-outlined text-slate-400 group-hover:text-primary transition-colors">cloud_upload</span>
+									<span class="text-xs font-medium text-slate-500 mt-1">Elegir Archivo</span>
+									<input type="file" id="item-image-file" accept="image/*" class="hidden"
+										onchange="handleImageUpload(this)">
+								</div>
+							</label>
+							<div id="item-image-preview"
+								class="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-800 border border-border-light dark:border-border-dark flex items-center justify-center overflow-hidden">
+								<span class="material-symbols-outlined text-slate-300">image</span>
+							</div>
+						</div>
+						<input type="hidden" id="item-image">
+					</div>
+				</div>
+
+				<div
+					class="p-6 bg-slate-50 dark:bg-slate-800/30 border-t border-border-light dark:border-border-dark flex gap-3">
+					<button
+						class="flex-1 bg-primary text-primary-dark font-bold py-3 rounded-xl transition-all hover:scale-[1.02] shadow-sm"
+						onclick="saveMenuItem()">
+						Guardar Producto
+					</button>
+					<button
+						class="flex-1 bg-white dark:bg-surface-dark text-slate-600 dark:text-slate-400 font-bold py-3 rounded-xl border border-border-light dark:border-border-dark hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+						onclick="closeMenuItemModal()">
+						Cancelar
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal Detalle de Mesa -->
+		<div id="table-detail-modal"
+			class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 [&.show]:opacity-100 [&.show]:pointer-events-auto">
+			<div
+				class="bg-surface dark:bg-surface-dark w-full max-w-lg rounded-2xl shadow-2xl border border-border-light dark:border-border-dark overflow-hidden transform scale-95 transition-transform duration-300 [.show_&]:scale-100">
+				<div class="p-6 border-b border-border-light dark:border-border-dark flex items-center justify-between">
+					<h3 id="table-detail-title" class="text-xl font-bold text-slate-900 dark:text-white">Detalle Mesa
+					</h3>
+					<button
+						class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						onclick="closeTableDetailModal()">
+						<span class="material-symbols-outlined text-[20px]">close</span>
+					</button>
+				</div>
+				<div id="table-detail-content"
+					class="p-6 space-y-6 max-h-[70vh] overflow-y-auto text-slate-600 dark:text-slate-400">
+					<!-- Se genera dinámicamente -->
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal Tomar Pedido -->
+		<div id="order-modal"
+			class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300 [&.show]:opacity-100 [&.show]:pointer-events-auto">
+			<div
+				class="bg-surface dark:bg-surface-dark w-full max-w-6xl rounded-2xl shadow-2xl border border-border-light dark:border-border-dark overflow-hidden transform scale-95 transition-transform duration-300 [.show_&]:scale-100 flex flex-col max-h-[90vh]">
+				<div class="p-6 border-b border-border-light dark:border-border-dark flex items-center justify-between">
+					<h3 id="order-modal-title" class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+						Nuevo Pedido</h3>
+					<button
+						class="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+						onclick="closeOrderModal()">
+						<span class="material-symbols-outlined text-[24px]">close</span>
+					</button>
+				</div>
+
+				<div class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-[1fr_400px]">
+					<!-- Menú de productos -->
+					<div class="p-6 overflow-y-auto border-r border-border-light dark:border-border-dark space-y-6">
+						<div
+							class="flex items-center justify-between sticky top-0 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-md pb-4 z-10">
+							<h4
+								class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+								<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+								Carga de Productos
+							</h4>
+						</div>
+						<div id="order-menu-items" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+					</div>
+
+					<!-- Resumen del pedido -->
+					<div class="p-6 bg-slate-50 dark:bg-slate-800/30 flex flex-col overflow-hidden">
+						<div class="flex items-center gap-2 mb-6">
+							<span class="material-symbols-outlined text-primary">shopping_basket</span>
+							<h4 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">
+								Resumen del Pedido</h4>
+						</div>
+
+						<div id="order-items-summary" class="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+						</div>
+
+						<div class="mt-6 pt-6 border-t border-border-light dark:border-border-dark space-y-4">
+							<div
+								class="p-4 rounded-2xl bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm">
+								<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total a
+									Pagar</p>
+								<div id="order-total-amount"
+									class="text-4xl font-bold text-primary-dark dark:text-primary tracking-tight">
+									$0.00
+								</div>
+							</div>
+
+							<div class="grid grid-cols-1 gap-3">
+								<button
+									class="w-full bg-primary text-primary-dark font-bold py-4 rounded-2xl transition-all hover:scale-[1.02] shadow-sm flex items-center justify-center gap-2"
+									onclick="saveOrderFromModal()">
+									<span class="material-symbols-outlined font-bold">check</span> Confirmar Pedido
+								</button>
+								<button
+									class="w-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold py-4 rounded-2xl transition-colors hover:bg-slate-300 dark:hover:bg-slate-600"
+									onclick="closeOrderModal()">
+									Cancelar
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal Método de Pago -->
+		<div id="payment-method-modal"
+			class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-300 [&.show]:opacity-100 [&.show]:pointer-events-auto"
+			style="display: none;">
+			<div
+				class="bg-surface dark:bg-surface-dark w-full max-w-md rounded-2xl shadow-2xl border border-border-light dark:border-border-dark overflow-hidden transform scale-95 transition-transform duration-300 [.show_&]:scale-100">
+				<div class="p-6 border-b border-border-light dark:border-border-dark">
+					<h3 class="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Seleccionar Método de
+						Pago</h3>
+				</div>
+				<div class="p-6 space-y-6">
+					<div id="payment-method-info"
+						class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-border-light dark:border-border-dark">
+						<!-- Info del pedido -->
+					</div>
+
+					<div class="space-y-3">
+						<label class="text-xs font-bold text-slate-500 uppercase tracking-widest px-1">Forma de
+							Pago</label>
+						<select id="payment-method-select"
+							class="w-full bg-white dark:bg-slate-800 border border-border-light dark:border-border-dark rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+							<option value="Efectivo">💵 Efectivo</option>
+							<option value="Tarjeta">💳 Tarjeta</option>
+							<option value="Transferencia">🏦 Transferencia</option>
+							<option value="Mixto">🔄 Mixto</option>
+							<option value="Cortesía">🎁 Cortesía</option>
+						</select>
+					</div>
+
+					<div class="grid grid-cols-1 gap-3 pt-2">
+						<button
+							class="w-full bg-primary text-primary-dark font-bold py-4 rounded-xl transition-all hover:scale-[1.02] shadow-sm flex items-center justify-center gap-2"
+							onclick="confirmPaymentMethod()">
+							<span class="material-symbols-outlined font-bold">check</span> Confirmar Pago
+						</button>
+						<button
+							class="w-full bg-transparent text-slate-500 font-bold py-2 rounded-xl hover:text-slate-700 transition-colors"
+							onclick="closePaymentMethodModal()">
+							Cancelar
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<script src="app.js"></script>
+		<script>
+			let currentEditingTable = null;
+			let currentEditingMenuItem = null;
+			let autoRefreshInterval = null;
+			let isRefreshing = false;
+			let isCriticalOperation = false; // Bloquea cualquier recarga durante operaciones críticas (completar/cancelar pedidos)
+			const financeFilters = {
+				startDate: '',
+				endDate: '',
+				type: 'all',
+				method: 'all'
+			};
+			let financeViewMode = 'daily';
+
+			function ensureUtilsHelpers() {
+				const globalUtils = window.Utils || {};
+				const defaultTz = window.APP_TIMEZONE || 'America/Bogota';
+				if (typeof globalUtils.getDateKey !== 'function') {
+					globalUtils.getDateKey = function (date = new Date(), timeZone = defaultTz) {
+						return new Intl.DateTimeFormat('en-CA', {
+							timeZone,
+							year: 'numeric',
+							month: '2-digit',
+							day: '2-digit'
+						}).format(date);
+					};
+				}
+				if (typeof globalUtils.getMonthKey !== 'function') {
+					globalUtils.getMonthKey = function (date = new Date(), timeZone = defaultTz) {
+						const parts = new Intl.DateTimeFormat('en-CA', {
+							timeZone,
+							year: 'numeric',
+							month: '2-digit'
+						}).formatToParts(date);
+						const year = parts.find(p => p.type === 'year')?.value || '0000';
+						const month = parts.find(p => p.type === 'month')?.value || '01';
+						return `${year}-${month}`;
+					};
+				}
+				if (typeof globalUtils.getDateKeyFromISO !== 'function') {
+					globalUtils.getDateKeyFromISO = function (isoString, timeZone = defaultTz) {
+						if (!isoString) return '';
+						return globalUtils.getDateKey(new Date(isoString), timeZone);
+					};
+				}
+				if (typeof globalUtils.getMonthKeyFromISO !== 'function') {
+					globalUtils.getMonthKeyFromISO = function (isoString, timeZone = defaultTz) {
+						if (!isoString) return '';
+						return globalUtils.getMonthKey(new Date(isoString), timeZone);
+					};
+				}
+				if (typeof globalUtils.formatCurrency !== 'function') {
+					globalUtils.formatCurrency = function (amount) {
+						return new Intl.NumberFormat('es-MX', {
+							style: 'currency',
+							currency: 'MXN'
+						}).format(amount || 0);
+					};
+				}
+				if (typeof globalUtils.formatDate !== 'function') {
+					globalUtils.formatDate = function (date) {
+						return new Intl.DateTimeFormat('es-MX', {
+							year: 'numeric',
+							month: '2-digit',
+							day: '2-digit',
+							hour: '2-digit',
+							minute: '2-digit'
+						}).format(new Date(date));
+					};
+				}
+				if (typeof globalUtils.formatDateKeyForChart !== 'function') {
+					globalUtils.formatDateKeyForChart = function (dateKey, timeZone = defaultTz) {
+						if (!dateKey) return '';
+						const [year, month, day] = dateKey.split('-').map(Number);
+						const anchor = new Date(Date.UTC(year, (month || 1) - 1, day || 1, 12, 0, 0));
+						return new Intl.DateTimeFormat('es-MX', {
+							timeZone,
+							weekday: 'short',
+							day: 'numeric'
+						}).format(anchor);
+					};
+				}
+				if (typeof globalUtils.showNotification !== 'function') {
+					globalUtils.showNotification = function (message, type = 'info') {
+						console.log(`[${type.toUpperCase()}] ${message}`);
+						if (type === 'error') {
+							alert(message);
+						}
+					};
+				}
+				window.Utils = globalUtils;
+			}
+
+			ensureUtilsHelpers();
+
+			function renderStatusPill(status) {
+				const map = {
+					available: {
+						bg: 'bg-green-50 dark:bg-green-900/20',
+						text: 'text-green-600 dark:text-green-400',
+						border: 'border-green-100 dark:border-green-900/30',
+						dot: 'bg-green-500',
+						label: 'Disponible'
+					},
+					occupied: {
+						bg: 'bg-amber-50 dark:bg-amber-900/20',
+						text: 'text-amber-600 dark:text-amber-400',
+						border: 'border-amber-100 dark:border-amber-900/30',
+						dot: 'bg-amber-500',
+						label: 'Ocupada'
+					},
+					reserved: {
+						bg: 'bg-slate-100 dark:bg-slate-800',
+						text: 'text-slate-600 dark:text-slate-400',
+						border: 'border-slate-200 dark:border-slate-700',
+						dot: 'bg-slate-400',
+						label: 'Reservada'
+					}
+				};
+				const config = map[status] || {
+					bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200', dot: 'bg-slate-400', label: status
+				};
+
+				return `
+				<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${config.bg} ${config.text} border ${config.border} uppercase">
+					<span class="w-1.5 h-1.5 rounded-full ${config.dot}"></span>
+					${config.label}
+				</span>`;
+			}
+
+			async function init() {
+				await loadInitialData();
+				await initializeDefaultData();
+				setFinanceViewMode('daily', { skipRender: true });
+				renderDashboard();
+				renderAllSections();
+				startAutoRefresh();
+			}
+
+			// Auto-actualización cada 5 segundos
+			function startAutoRefresh() {
+				// Limpiar intervalo anterior si existe
+				if (autoRefreshInterval) {
+					clearInterval(autoRefreshInterval);
+				}
+
+				// Actualizar cada 5 segundos
+				autoRefreshInterval = setInterval(async () => {
+					// No ejecutar si hay una operación crítica en curso (completar/cancelar pedido)
+					if (!isRefreshing && !isCriticalOperation) {
+						isRefreshing = true;
+						try {
+							await loadInitialData();
+
+							// Solo actualizar la sección activa para no interrumpir formularios
+							const activeSection = document.querySelector('.section.active');
+							if (activeSection) {
+								const sectionId = activeSection.id;
+								if (sectionId === 'dashboard') renderDashboard();
+								if (sectionId === 'tables') renderTables();
+								if (sectionId === 'orders') renderOrders();
+								if (sectionId === 'transactions') renderFinance();
+							}
+
+							// Actualizar badge de notificaciones si hay pedidos nuevos
+							updateNotificationBadge();
+						} catch (error) {
+							console.error('Error en auto-refresh:', error);
+						} finally {
+							isRefreshing = false;
+						}
+					}
+				}, 5000); // 5 segundos
+			}
+
+			function stopAutoRefresh() {
+				if (autoRefreshInterval) {
+					clearInterval(autoRefreshInterval);
+					autoRefreshInterval = null;
+				}
+			}
+
+			function updateNotificationBadge() {
+				const activeOrders = AppState.orders.filter(o => o.status === 'pending').length;
+				// Aquí podrías agregar un badge visual si quieres
+				if (activeOrders > 0) {
+					document.title = `(${activeOrders}) Admin - Sistema Restaurante`;
+				} else {
+					document.title = 'Admin - Sistema Restaurante';
+				}
+			}
+
+			// SISTEMA DE NOTIFICACIONES DE COCINA
+			// Para mismo dispositivo (mismo localStorage)
+			window.addEventListener('storage', (e) => {
+				if (e.key === 'kitchenNotification' && e.newValue) {
+					const notification = JSON.parse(e.newValue);
+					showKitchenReadyNotification(notification);
+					// Limpiar la notificación
+					localStorage.removeItem('kitchenNotification');
+				}
+			});
+
+			// Para diferentes dispositivos (polling de pedidos listos)
+			let lastNotifiedOrders = new Set();
+			setInterval(async () => {
+				// No ejecutar si hay una operación crítica en curso
+				if (isCriticalOperation) return;
+
+				// Verificar pedidos que están completamente listos y no han sido notificados
+				const ordersToNotify = AppState.orders.filter(order => {
+					return order.status === 'pending' &&
+						order.items.length > 0 &&
+						order.items.every(item => item.kitchenStatus === 'ready') &&
+						order.kitchenNotifiedAt &&
+						!lastNotifiedOrders.has(order.id);
+				});
+
+				for (const order of ordersToNotify) {
+					// Verificar que la notificación es reciente (últimos 10 segundos)
+					const notifiedTime = new Date(order.kitchenNotifiedAt).getTime();
+					const now = Date.now();
+					if (now - notifiedTime < 10000) {
+						lastNotifiedOrders.add(order.id);
+						showKitchenReadyNotification({
+							tableNumber: order.tableNumber,
+							orderId: order.id,
+							timestamp: order.kitchenNotifiedAt
+						});
+					}
+				}
+
+				// Limpiar pedidos antiguos del set
+				if (lastNotifiedOrders.size > 50) {
+					lastNotifiedOrders.clear();
+				}
+			}, 2000); // Verificar cada 2 segundos
+
+			function showKitchenReadyNotification(notification) {
+				// Reproducir sonido de notificación
+				playKitchenNotificationSound();
+
+				// Mostrar notificación visual
+				const notifDiv = document.createElement('div');
+				notifDiv.style.cssText = `
+				position: fixed;
+				top: 80px;
+				right: 30px;
+				background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+				color: #fff;
+				padding: 20px 30px;
+				border-radius: 12px;
+				box-shadow: 0 8px 30px rgba(76, 175, 80, 0.5);
+				z-index: 10000;
+				font-size: 16px;
+				font-weight: 600;
+				animation: slideInRight 0.5s ease;
+				min-width: 300px;
+			`;
+
+				notifDiv.innerHTML = `
+				<div style="display: flex; align-items: center; gap: 15px;">
+					<span class="icon-dot icon-dot--success" style="width: 18px; height: 18px; box-shadow: none;"></span>
+					<div>
+						<div style="font-size: 18px; margin-bottom: 5px;">¡Pedido Listo!</div>
+						<div style="font-size: 14px; opacity: 0.9;">Mesa ${notification.tableNumber}</div>
+					</div>
+				</div>
+			`;
+
+				document.body.appendChild(notifDiv);
+
+				// Animar y remover después de 5 segundos
+				setTimeout(() => {
+					notifDiv.style.animation = 'slideOutRight 0.5s ease';
+					setTimeout(() => notifDiv.remove(), 500);
+				}, 5000);
+
+				// Actualizar datos para reflejar el estado
+				loadInitialData().then(() => {
+					renderAllSections();
+				});
+			}
+
+			function playKitchenNotificationSound() {
+				try {
+					const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+					// Primer beep
+					const playBeep = (frequency, startTime, duration) => {
+						const oscillator = audioContext.createOscillator();
+						const gainNode = audioContext.createGain();
+
+						oscillator.connect(gainNode);
+						gainNode.connect(audioContext.destination);
+
+						oscillator.frequency.value = frequency;
+						oscillator.type = 'sine';
+						gainNode.gain.value = 0.3;
+
+						oscillator.start(startTime);
+						oscillator.stop(startTime + duration);
+					};
+
+					// Triple beep melodioso
+					const now = audioContext.currentTime;
+					playBeep(600, now, 0.15);
+					playBeep(800, now + 0.2, 0.15);
+					playBeep(1000, now + 0.4, 0.3);
+				} catch (error) {
+					console.log('No se pudo reproducir sonido');
+				}
+			}
+
+			// Agregar estilos de animación
+			async function createDeliveryOrder() {
+				const deliveryId = Utils.generateId();
+				const count = AppState.tables.filter(t => t.id && String(t.id).startsWith('del-')).length + 1;
+
+				const deliveryTable = {
+					id: 'del-' + deliveryId,
+					number: 'D-' + count,
+					capacity: 0,
+					status: 'available',
+					currentOrder: null,
+					isTakeaway: true
+				};
+
+				// Agregar al estado local
+				AppState.tables.push(deliveryTable);
+
+				// Abrir modal de pedidos
+				openOrderModal(deliveryTable.id);
+
+				// Refrescar vistas
+				renderDashboard();
+				renderTables();
+			}
+
+			function downloadBackup() {
+				const dataStr = JSON.stringify(AppState, null, 2);
+				const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+				const exportFileDefaultName = 'backup-dondealex-' + new Date().toISOString().slice(0, 10) + '.json';
+
+				const linkElement = document.createElement('a');
+				linkElement.setAttribute('href', dataUri);
+				linkElement.setAttribute('download', exportFileDefaultName);
+				linkElement.click();
+
+				Utils.showNotification('Copia de seguridad descargada', 'success');
+			}
+
+			const style = document.createElement('style');
+			style.textContent = `
+			@keyframes slideInRight {
+				from {
+					transform: translateX(400px);
+					opacity: 0;
+				}
+				to {
+					transform: translateX(0);
+					opacity: 1;
+				}
+			}
+			@keyframes slideOutRight {
+				from {
+					transform: translateX(0);
+					opacity: 1;
+				}
+				to {
+					transform: translateX(400px);
+					opacity: 0;
+				}
+			}
+		`;
+			document.head.appendChild(style);
+
+			function showSection(sectionId) {
+				// 1. Manejar Secciones
+				document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+				const targetSection = document.getElementById(sectionId);
+				if (targetSection) targetSection.classList.add('active');
+
+				// 2. Manejar Sidebar (Nav Items)
+				document.querySelectorAll('.nav-item').forEach(item => {
+					// Remover clases de estado activo
+					item.classList.remove('bg-primary/10', 'text-primary-dark', 'dark:text-primary', 'active-nav');
+					item.classList.add('text-slate-600', 'dark:text-slate-400', 'hover:bg-slate-50', 'dark:hover:bg-white/5');
+
+					// También remover color del icono si es necesario
+					const icon = item.querySelector('.material-symbols-outlined');
+					if (icon) {
+						icon.classList.remove('text-primary-dark', 'dark:text-primary');
+					}
+				});
+
+				// Aplicar clases activas al item seleccionado
+				// Buscamos el item por su atributo onclick que contiene el sectionId
+				const activeItem = Array.from(document.querySelectorAll('.nav-item')).find(item => {
+					const onclick = item.getAttribute('onclick');
+					return onclick && onclick.includes(`'${sectionId}'`);
+				});
+
+				if (activeItem) {
+					activeItem.classList.add('bg-primary/10', 'text-primary-dark', 'dark:text-primary', 'active-nav');
+					activeItem.classList.remove('text-slate-600', 'dark:text-slate-400', 'hover:bg-slate-50', 'dark:hover:bg-white/5');
+
+					const activeIcon = activeItem.querySelector('.material-symbols-outlined');
+					if (activeIcon) {
+						activeIcon.classList.add('text-primary-dark', 'dark:text-primary');
+					}
+				}
+
+				// 3. Control de Auto-refresh
+				if (sectionId === 'menu-config') {
+					stopAutoRefresh();
+				} else {
+					startAutoRefresh();
+				}
+
+				// 4. Renderizado Específico
+				if (sectionId === 'dashboard') renderDashboard();
+				if (sectionId === 'tables') renderTables();
+				if (sectionId === 'orders') renderOrders();
+				if (sectionId === 'menu-config') renderMenuConfig();
+				if (sectionId === 'transactions') renderFinance();
+				if (sectionId === 'profitability') renderProfitability();
+				if (sectionId === 'system-config') updateSystemInfo();
+			}
+
+			async function refreshData() {
+				const btn = event.target;
+				btn.disabled = true;
+				btn.textContent = 'Actualizando...';
+
+				await loadInitialData();
+				renderAllSections();
+
+				btn.disabled = false;
+				btn.innerHTML = '<span class="icon-dot icon-dot--info"></span><span>Actualizar</span>';
+
+				// Mostrar notificación temporal
+				const notification = document.createElement('div');
+				notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ffffff; color: #000000; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(255,255,255,0.3); z-index: 9999; animation: slideIn 0.3s ease;';
+				notification.textContent = 'Datos actualizados';
+				document.body.appendChild(notification);
+
+				setTimeout(() => {
+					notification.style.animation = 'slideOut 0.3s ease';
+					setTimeout(() => notification.remove(), 300);
+				}, 2000);
+			}
+
+			function renderAllSections() {
+				renderDashboard();
+				renderTables();
+				renderOrders();
+				renderMenuConfig();
+				renderFinance();
+			}
+
+			// === FINANZAS ===
+			function formatDateInput(date) {
+				if (!date) return '';
+				const year = date.getFullYear();
+				const month = String(date.getMonth() + 1).padStart(2, '0');
+				const day = String(date.getDate()).padStart(2, '0');
+				return `${year}-${month}-${day}`;
+			}
+
+			function parseDateInput(value, endOfDay = false) {
+				if (!value) return null;
+				const [year, month, day] = value.split('-').map(Number);
+				if (!year || !month || !day) return null;
+				const date = new Date(year, month - 1, day);
+				if (isNaN(date.getTime())) return null;
+				if (endOfDay) {
+					date.setHours(23, 59, 59, 999);
+				} else {
+					date.setHours(0, 0, 0, 0);
+				}
+				return date;
+			}
+
+			function formatDateForDisplay(value) {
+				if (!value) return '';
+				const date = new Date(value);
+				if (isNaN(date.getTime())) return value;
+				return new Intl.DateTimeFormat('es-MX', {
+					year: 'numeric',
+					month: '2-digit',
+					day: '2-digit'
+				}).format(date);
+			}
+
+			function getTransactionSignedAmount(transaction) {
+				const raw = Number(transaction?.amount);
+				if (!isFinite(raw)) return 0;
+				const type = (transaction?.type || 'sale').toLowerCase();
+				if (['expense', 'refund', 'payout', 'cost'].includes(type)) {
+					return raw > 0 ? -raw : raw;
+				}
+				return raw;
+			}
+
+			function formatTransactionType(type) {
+				const normalized = (type || 'sale').toLowerCase();
+				switch (normalized) {
+					case 'sale':
+						return 'Venta';
+					case 'income':
+						return 'Ingreso';
+					case 'expense':
+						return 'Gasto';
+					case 'adjustment':
+						return 'Ajuste';
+					case 'refund':
+						return 'Devolución';
+					default:
+						return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+				}
+			}
+
+			function collectFinanceMethodMap() {
+				const methodMap = new Map();
+				AppState.transactions.forEach(transaction => {
+					const raw = transaction?.paymentMethod;
+					const label = raw && String(raw).trim() ? String(raw).trim() : 'Sin método';
+					const key = label.toLowerCase();
+					if (!methodMap.has(key)) {
+						methodMap.set(key, label);
+					}
+				});
+				return methodMap;
+			}
+
+			function getFinanceMethodLabel(key) {
+				if (!key || key === 'all') return 'todos los métodos';
+				const label = collectFinanceMethodMap().get(key);
+				return label || key;
+			}
+
+			function populateFinanceMethodOptions() {
+				const select = document.getElementById('finance-filter-method');
+				if (!select) return;
+				const methodMap = collectFinanceMethodMap();
+				const options = ['<option value="all">Todos</option>'];
+				methodMap.forEach((label, key) => {
+					options.push(`<option value="${key}">${label}</option>`);
+				});
+				select.innerHTML = options.join('');
+				if (financeFilters.method !== 'all' && !methodMap.has(financeFilters.method)) {
+					financeFilters.method = 'all';
+				}
+				select.value = financeFilters.method;
+			}
+
+			function syncFinanceFilterInputs() {
+				const startInput = document.getElementById('finance-filter-start');
+				if (startInput && startInput.value !== financeFilters.startDate) {
+					startInput.value = financeFilters.startDate;
+				}
+				const endInput = document.getElementById('finance-filter-end');
+				if (endInput && endInput.value !== financeFilters.endDate) {
+					endInput.value = financeFilters.endDate;
+				}
+				const typeSelect = document.getElementById('finance-filter-type');
+				if (typeSelect && typeSelect.value !== financeFilters.type) {
+					typeSelect.value = financeFilters.type;
+				}
+				const methodSelect = document.getElementById('finance-filter-method');
+				if (methodSelect && methodSelect.value !== financeFilters.method) {
+					methodSelect.value = financeFilters.method;
+				}
+			}
+
+			function syncFinanceViewModeButtons() {
+				document.querySelectorAll('#finance-period-tabs .finance-tab').forEach(button => {
+					const mode = button.dataset.mode;
+					const isActive = mode === financeViewMode;
+					button.classList.toggle('btn-warning', isActive);
+					button.classList.toggle('btn-secondary', !isActive);
+				});
+			}
+
+			function getFilteredTransactions() {
+				const start = parseDateInput(financeFilters.startDate);
+				const end = parseDateInput(financeFilters.endDate, true);
+				const typeFilter = (financeFilters.type || 'all').toLowerCase();
+				const methodFilter = financeFilters.method || 'all';
+				return AppState.transactions
+					.filter(transaction => {
+						if (!transaction?.date) return false;
+						const date = new Date(transaction.date);
+						if (isNaN(date.getTime())) return false;
+						if (start && date < start) return false;
+						if (end && date > end) return false;
+						const normalizedType = (transaction.type || 'sale').toLowerCase();
+						if (typeFilter !== 'all') {
+							if (typeFilter === 'other') {
+								if (['sale', 'income', 'expense', 'adjustment'].includes(normalizedType)) {
+									return false;
+								}
+							} else if (normalizedType !== typeFilter) {
+								return false;
+							}
+						}
+						const methodLabel = transaction.paymentMethod && String(transaction.paymentMethod).trim()
+							? String(transaction.paymentMethod).trim().toLowerCase()
+							: 'sin método';
+						if (methodFilter !== 'all' && methodLabel !== methodFilter) {
+							return false;
+						}
+						return true;
+					})
+					.sort((a, b) => new Date(b.date) - new Date(a.date));
+			}
+
+			function calculateFinanceTotals(transactions) {
+				return transactions.reduce((acc, transaction) => {
+					const amount = getTransactionSignedAmount(transaction);
+					if (amount >= 0) {
+						acc.income += amount;
+					} else {
+						acc.expense += Math.abs(amount);
+					}
+					acc.net += amount;
+					return acc;
+				}, { income: 0, expense: 0, net: 0 });
+			}
+
+			function getTypeFilterLabel(type) {
+				switch (type) {
+					case 'sale':
+						return 'solo ventas';
+					case 'income':
+						return 'solo ingresos';
+					case 'expense':
+						return 'solo gastos';
+					case 'adjustment':
+						return 'solo ajustes';
+					case 'other':
+						return 'otros movimientos';
+					default:
+						return 'todos los tipos';
+				}
+			}
+
+			function renderFinanceSummary(transactions) {
+				const totals = calculateFinanceTotals(transactions);
+
+				// Calcular rentabilidad para las transacciones filtradas
+				let totalProfit = 0;
+				transactions.forEach(transaction => {
+					const amount = getTransactionSignedAmount(transaction);
+					// Solo considerar ventas positivas
+					if (transaction.type === 'sale' && amount > 0 && transaction.orderId) {
+						const order = AppState.orders.find(o => o.id === transaction.orderId);
+						if (order) {
+							let orderCost = 0;
+							order.items.forEach(item => {
+								const menuItem = AppState.menuItems.find(m => m.id === item.menuItemId);
+								const cost = menuItem?.cost || 0;
+								orderCost += cost * item.quantity;
+							});
+							// Profit = Venta - Costo
+							// Usamos el monto de la transacción para ser fieles a lo cobrado
+							totalProfit += (amount - orderCost);
+						}
+					}
+				});
+
+				const incomeEl = document.getElementById('finance-total-income');
+				if (incomeEl) incomeEl.textContent = Utils.formatCurrency(totals.income);
+
+				// Elemento de Rentabilidad (reemplaza a Gastos)
+				const profitEl = document.getElementById('finance-total-profit');
+				if (profitEl) {
+					profitEl.textContent = Utils.formatCurrency(totalProfit);
+					profitEl.classList.toggle('text-primary-dark', totalProfit >= 0);
+					profitEl.classList.toggle('dark:text-primary', totalProfit >= 0);
+					profitEl.classList.toggle('text-red-600', totalProfit < 0);
+				}
+
+				const netEl = document.getElementById('finance-total-net');
+				if (netEl) netEl.textContent = Utils.formatCurrency(totals.net);
+				const countEl = document.getElementById('finance-total-count');
+				if (countEl) countEl.textContent = `${transactions.length} transacciones`;
+				const summaryEl = document.getElementById('finance-period-summary');
+				if (summaryEl) {
+					let rangeText = 'todo el historial';
+					if (financeFilters.startDate && financeFilters.endDate) {
+						const startTxt = formatDateForDisplay(financeFilters.startDate);
+						const endTxt = formatDateForDisplay(financeFilters.endDate);
+						rangeText = startTxt === endTxt ? startTxt : `${startTxt} - ${endTxt}`;
+					} else if (financeFilters.startDate) {
+						rangeText = `desde ${formatDateForDisplay(financeFilters.startDate)}`;
+					} else if (financeFilters.endDate) {
+						rangeText = `hasta ${formatDateForDisplay(financeFilters.endDate)}`;
+					}
+					const modeLabel = {
+						daily: 'diaria',
+						weekly: 'semanal',
+						monthly: 'mensual',
+						custom: 'personalizada'
+					}[financeViewMode] || 'personalizada';
+					const typeLabel = getTypeFilterLabel(financeFilters.type);
+					const methodLabel = getFinanceMethodLabel(financeFilters.method);
+					summaryEl.textContent = `Vista ${modeLabel}: ${transactions.length} transacciones (${typeLabel}, ${methodLabel}) en ${rangeText}.`;
+				}
+			}
+
+			function truncateText(text, maxLength = 40) {
+				if (!text) return '';
+				const normalized = String(text);
+				return normalized.length <= maxLength ? normalized : `${normalized.slice(0, maxLength - 3)}...`;
+			}
+
+			function renderTransactionsTable(transactions) {
+				const tbody = document.querySelector('#transactions-table tbody');
+				if (!tbody) return;
+
+				if (!transactions || transactions.length === 0) {
+					tbody.innerHTML = `
+					<tr>
+						<td colspan="8" class="px-6 py-20 text-center text-slate-400">
+							<span class="material-symbols-outlined text-5xl mb-2 opacity-20">history_edu</span>
+							<p>No hay transacciones para el rango seleccionado</p>
+						</td>
+					</tr>`;
+					return;
+				}
+
+				tbody.innerHTML = transactions.map(transaction => {
+					const amount = getTransactionSignedAmount(transaction);
+					const isNegative = amount < 0;
+					const type = transaction.type || 'other';
+
+					// Calcular rentabilidad
+					let profitDisplay = '<span class="text-slate-400">-</span>';
+					if (type === 'sale' && amount > 0 && transaction.orderId) {
+						const order = AppState.orders.find(o => o.id === transaction.orderId);
+						if (order) {
+							let totalCost = order.items.reduce((sum, item) => {
+								const menuItem = AppState.menuItems.find(m => m.id === item.menuItemId);
+								return sum + ((menuItem?.cost || 0) * item.quantity);
+							}, 0);
+							const profit = amount - totalCost;
+							const isProfitPositive = profit >= 0;
+
+							profitDisplay = `
+							<button onclick="viewTransactionProfitability('${transaction.id}')" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold transition-all ${isProfitPositive ? 'bg-primary/10 text-primary-dark hover:bg-primary/20' : 'bg-red-50 text-red-600 hover:bg-red-100'}">
+								<span class="w-1 h-1 rounded-full ${isProfitPositive ? 'bg-primary' : 'bg-red-500'}"></span>
+								${Utils.formatCurrency(profit)}
+							</button>`;
+						}
+					}
+
+					return `
+					<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+						<td class="px-6 py-4 whitespace-nowrap text-xs font-medium text-slate-500 dark:text-slate-400">
+							${Utils.formatDate(transaction.date)}
+						</td>
+						<td class="px-6 py-4 text-xs font-bold text-slate-900 dark:text-white">
+							${transaction.tableNumber ? `Mesa ${transaction.tableNumber}` : '-'}
+						</td>
+						<td class="px-6 py-4 text-xs text-slate-600 dark:text-slate-400 line-clamp-1 max-w-[200px]">
+							${transaction.concept || '-'}
+						</td>
+						<td class="px-6 py-4">
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${type === 'sale' ? 'bg-blue-50 text-blue-600' : type === 'expense' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-500'}">
+								${formatTransactionType(type)}
+							</span>
+						</td>
+						<td class="px-6 py-4 text-xs text-slate-500 uppercase font-bold">
+							${transaction.paymentMethod || '-'}
+						</td>
+						<td class="px-6 py-4 text-right whitespace-nowrap text-sm font-bold ${isNegative ? 'text-red-600' : 'text-slate-900 dark:text-white'}">
+							${Utils.formatCurrency(amount)}
+						</td>
+						<td class="px-6 py-4 text-center">
+							${profitDisplay}
+						</td>
+						<td class="px-6 py-4 text-right">
+							<button class="p-2 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-colors" onclick="deleteTransaction('${transaction.id}')">
+								<span class="material-symbols-outlined text-[18px]">delete</span>
+							</button>
+						</td>
+					</tr>
+					`;
+				}).join('');
+			}
+
+			async function viewTransactionProfitability(transactionId) {
+				const transaction = AppState.transactions.find(t => t.id === transactionId);
+				if (!transaction || !transaction.orderId) {
+					alert('Esta transacción no tiene detalles de productos asociados.');
+					return;
+				}
+
+				const order = AppState.orders.find(o => o.id === transaction.orderId);
+				if (!order) {
+					alert('No se encontró la orden asociada a esta transacción.');
+					return;
+				}
+
+				// Calcular totales
+				let totalCost = 0;
+				let totalSale = getTransactionSignedAmount(transaction); // Usar el monto real de la transacción
+
+				const itemsWithProfit = order.items.map(item => {
+					const menuItem = AppState.menuItems.find(m => m.id === item.menuItemId);
+					const unitCost = menuItem?.cost || 0;
+					const totalItemCost = unitCost * item.quantity;
+					const totalItemSale = item.price * item.quantity;
+					const itemProfit = totalItemSale - totalItemCost;
+					const itemMargin = totalItemSale > 0 ? ((itemProfit / totalItemSale) * 100).toFixed(1) : 0;
+
+					totalCost += totalItemCost;
+
+					return {
+						...item,
+						unitCost,
+						totalItemCost,
+						totalItemSale,
+						itemProfit,
+						itemMargin
+					};
+				});
+
+				const totalProfit = totalSale - totalCost;
+				const totalMargin = totalSale > 0 ? ((totalProfit / totalSale) * 100).toFixed(1) : 0;
+
+				// Mostrar modal detallado
+				const modal = document.createElement('div');
+				modal.className = 'modal';
+				modal.style.display = 'flex';
+				modal.innerHTML = `
+				<div class="panel" style="max-width: 800px; width: 95%;">
+					<div class="modal-header">
+						<h3>Rentabilidad - Mesa ${order.tableNumber}</h3>
+						<button class="modal-close" onclick="this.closest('.modal').remove()" aria-label="Cerrar">X</button>
+					</div>
+					<div style="padding: 20px;">
+						<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+							<div class="stat-card" style="padding: 15px;">
+								<h3 style="font-size: 12px;">Venta Total</h3>
+								<div class="value" style="font-size: 24px; color: #fff;">${Utils.formatCurrency(totalSale)}</div>
+							</div>
+							<div class="stat-card" style="padding: 15px;">
+								<h3 style="font-size: 12px;">Costo Total</h3>
+								<div class="value" style="font-size: 24px; color: #ff9800;">${Utils.formatCurrency(totalCost)}</div>
+							</div>
+							<div class="stat-card" style="padding: 15px;">
+								<h3 style="font-size: 12px;">Ganancia Neta</h3>
+								<div class="value" style="font-size: 24px; color: var(--success);">${Utils.formatCurrency(totalProfit)}</div>
+							</div>
+							<div class="stat-card" style="padding: 15px;">
+								<h3 style="font-size: 12px;">Margen</h3>
+								<div class="value" style="font-size: 24px; color: var(--accent);">${totalMargin}%</div>
+							</div>
+						</div>
+						
+						<h4 style="color: var(--accent); margin-bottom: 10px;">Desglose por Producto</h4>
+						<div class="table-scroll" style="max-height: 300px; margin-bottom: 20px;">
+							<table style="width: 100%; border-collapse: collapse;">
+								<thead style="background: rgba(255,255,255,0.05);">
+									<tr>
+										<th style="padding: 10px; text-align: left;">Producto</th>
+										<th style="padding: 10px; text-align: right;">Cant.</th>
+										<th style="padding: 10px; text-align: right;">Venta</th>
+										<th style="padding: 10px; text-align: right;">Costo</th>
+										<th style="padding: 10px; text-align: right;">Ganancia</th>
+										<th style="padding: 10px; text-align: right;">%</th>
+									</tr>
+								</thead>
+								<tbody>
+									${itemsWithProfit.map(item => `
+										<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+											<td style="padding: 10px;">${item.name}</td>
+											<td style="padding: 10px; text-align: right;">${item.quantity}</td>
+											<td style="padding: 10px; text-align: right;">${Utils.formatCurrency(item.totalItemSale)}</td>
+											<td style="padding: 10px; text-align: right; color: #ff9800;">${Utils.formatCurrency(item.totalItemCost)}</td>
+											<td style="padding: 10px; text-align: right; color: var(--success); font-weight: 600;">${Utils.formatCurrency(item.itemProfit)}</td>
+											<td style="padding: 10px; text-align: right;">${item.itemMargin}%</td>
+										</tr>
+									`).join('')}
+								</tbody>
+							</table>
+						</div>
+						
+						<div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+							<div style="font-size: 12px; color: var(--muted); margin-bottom: 5px;">Detalles de la Transacción</div>
+							<div style="display: flex; gap: 20px; flex-wrap: wrap;">
+								<div><span style="color: var(--muted);">Fecha:</span> ${Utils.formatDate(transaction.date)}</div>
+								<div><span style="color: var(--muted);">Método:</span> ${transaction.paymentMethod || 'N/A'}</div>
+								<div><span style="color: var(--muted);">ID:</span> <span style="font-family: monospace; font-size: 12px;">${transaction.id.substr(0, 8)}...</span></div>
+							</div>
+						</div>
+						
+						<div style="display: flex; gap: 10px;">
+							<button class="btn" onclick="generateInvoicePDF(AppState.orders.find(o => o.id === '${order.id}'))" style="flex: 1;"><span class="icon-dot icon-dot--info"></span><span>Descargar Factura PDF</span></button>
+							<button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="flex: 1;">Cerrar</button>
+						</div>
+					</div>
+				</div>
+			`;
+				document.body.appendChild(modal);
+			}
+
+			function renderFinance() {
+				populateFinanceMethodOptions();
+				syncFinanceFilterInputs();
+				syncFinanceViewModeButtons();
+				const transactions = getFilteredTransactions();
+				renderFinanceSummary(transactions);
+				renderTransactionsTable(transactions);
+			}
+
+			function setFinanceViewMode(mode, options = {}) {
+				financeViewMode = mode;
+				const today = new Date();
+				if (mode === 'daily') {
+					const formatted = formatDateInput(today);
+					financeFilters.startDate = formatted;
+					financeFilters.endDate = formatted;
+				} else if (mode === 'weekly') {
+					const start = new Date(today);
+					start.setDate(start.getDate() - 6);
+					financeFilters.startDate = formatDateInput(start);
+					financeFilters.endDate = formatDateInput(today);
+				} else if (mode === 'monthly') {
+					const start = new Date(today.getFullYear(), today.getMonth(), 1);
+					financeFilters.startDate = formatDateInput(start);
+					financeFilters.endDate = formatDateInput(today);
+				} else if (mode === 'custom') {
+					// Mantener fechas actuales
+				}
+				if (!options.skipRender) {
+					renderFinance();
+				} else {
+					syncFinanceFilterInputs();
+					syncFinanceViewModeButtons();
+				}
+			}
+
+			function updateFinanceFilter(field, value) {
+				if (field === 'startDate' || field === 'endDate') {
+					financeViewMode = 'custom';
+				}
+				financeFilters[field] = value || '';
+				if (field === 'startDate' || field === 'endDate') {
+					const start = parseDateInput(financeFilters.startDate);
+					const end = parseDateInput(financeFilters.endDate);
+					if (start && end && start > end) {
+						if (field === 'startDate') {
+							financeFilters.endDate = financeFilters.startDate;
+						} else {
+							financeFilters.startDate = financeFilters.endDate;
+						}
+					}
+				}
+				renderFinance();
+			}
+
+			function resetFinanceFilters() {
+				financeFilters.type = 'all';
+				financeFilters.method = 'all';
+				const typeSelect = document.getElementById('finance-filter-type');
+				if (typeSelect) typeSelect.value = 'all';
+				const methodSelect = document.getElementById('finance-filter-method');
+				if (methodSelect) methodSelect.value = 'all';
+				setFinanceViewMode('daily');
+			}
+
+			function formatCSVValue(value) {
+				if (value === null || value === undefined) return '';
+				if (typeof value === 'number') return value.toString();
+				const text = String(value).replace(/"/g, '""');
+				return /[";\n]/.test(text) ? `"${text}"` : text;
+			}
+
+			function exportFinanceCSV() {
+				const transactions = getFilteredTransactions();
+				if (transactions.length === 0) {
+					alert('No hay transacciones para exportar.');
+					return;
+				}
+				const headers = ['Fecha', 'Mesa', 'Concepto', 'Tipo', 'Método', 'Monto'];
+				const rows = transactions.map(transaction => {
+					const amount = getTransactionSignedAmount(transaction);
+					return [
+						Utils.formatDate(transaction.date),
+						transaction.tableNumber ? `Mesa ${transaction.tableNumber}` : '-',
+						transaction.concept || '-',
+						formatTransactionType(transaction.type),
+						transaction.paymentMethod && String(transaction.paymentMethod).trim() ? String(transaction.paymentMethod).trim() : 'Sin método',
+						Math.round(amount * 100) / 100
+					];
+				});
+				const csvContent = [headers, ...rows]
+					.map(row => row.map(formatCSVValue).join(';'))
+					.join('\n');
+				const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+				const url = URL.createObjectURL(blob);
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = `transacciones-${Utils.getDateKey()}.csv`;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				URL.revokeObjectURL(url);
+			}
+
+			function exportFinancePDF() {
+				const transactions = getFilteredTransactions();
+				if (transactions.length === 0) {
+					alert('No hay transacciones para exportar.');
+					return;
+				}
+				const totals = calculateFinanceTotals(transactions);
+				const { jsPDF } = window.jspdf;
+				const doc = new jsPDF();
+				doc.setFontSize(18);
+				doc.text('Historial de Transacciones', 105, 20, { align: 'center' });
+				doc.setFontSize(10);
+				doc.text(`Generado: ${new Date().toLocaleString('es-MX')}`, 105, 28, { align: 'center' });
+				doc.text(`Rango: ${document.getElementById('finance-period-summary')?.textContent || ''}`, 105, 34, { align: 'center' });
+				doc.setLineWidth(0.5);
+				doc.line(20, 38, 190, 38);
+				doc.setFontSize(10);
+				doc.text(`Ingresos: ${Utils.formatCurrency(totals.income)}`, 20, 47);
+				doc.text(`Gastos: ${Utils.formatCurrency(totals.expense * -1)}`, 20, 53);
+				doc.text(`Balance: ${Utils.formatCurrency(totals.net)}`, 20, 59);
+				doc.text(`Total transacciones: ${transactions.length}`, 20, 65);
+				let y = 75;
+				doc.setFontSize(9);
+				doc.text('Fecha', 20, y);
+				doc.text('Mesa', 55, y);
+				doc.text('Concepto', 75, y);
+				doc.text('Tipo', 130, y);
+				doc.text('Método', 150, y);
+				doc.text('Monto', 190, y, { align: 'right' });
+				y += 6;
+				transactions.forEach(transaction => {
+					if (y > 270) {
+						doc.addPage();
+						y = 20;
+					}
+					doc.text(Utils.formatDate(transaction.date), 20, y);
+					doc.text(transaction.tableNumber ? `Mesa ${transaction.tableNumber}` : '-', 55, y);
+					doc.text(truncateText(transaction.concept || '-', 40), 75, y);
+					doc.text(formatTransactionType(transaction.type), 130, y);
+					doc.text(transaction.paymentMethod && String(transaction.paymentMethod).trim() ? String(transaction.paymentMethod).trim() : 'Sin método', 150, y);
+					doc.text(Utils.formatCurrency(getTransactionSignedAmount(transaction)), 190, y, { align: 'right' });
+					y += 6;
+				});
+				const pdfBlob = doc.output('blob');
+				const pdfUrl = URL.createObjectURL(pdfBlob);
+				window.open(pdfUrl, '_blank');
+			}
+
+			// DASHBOARD
+			function renderDashboard() {
+				const occupiedTables = AppState.tables.filter(t => t.status === 'occupied').length;
+				const activeOrders = AppState.orders.filter(o => o.status === 'pending').length;
+
+				const today = Utils.getDateKey();
+				let todaySales = 0;
+
+				AppState.transactions.forEach(transaction => {
+					if (!transaction?.date) return;
+					const amount = getTransactionSignedAmount(transaction);
+					if (amount <= 0) return;
+					const transactionDate = Utils.getDateKeyFromISO(transaction.date);
+					if (transactionDate === today) {
+						todaySales += amount;
+					}
+				});
+
+				document.getElementById('stat-tables').innerHTML = `${occupiedTables}<span class="text-slate-400 text-lg font-normal">/20</span>`;
+				document.getElementById('stat-orders').textContent = activeOrders;
+				document.getElementById('stat-revenue').textContent = Utils.formatCurrency(todaySales);
+
+				const container = document.getElementById('table-grid');
+				if (!container) return;
+
+				container.innerHTML = AppState.tables.map(table => {
+					const order = table.currentOrder ? AppState.orders.find(o => o.id === table.currentOrder) : null;
+
+					let statusColorClass = 'bg-green-500';
+					let statusRingClass = 'ring-green-100 dark:ring-green-900/30';
+					let statusBgClass = 'bg-slate-100 dark:bg-slate-800';
+					let statusIcon = 'table_bar';
+					let statusLabel = `${table.capacity} Asientos`;
+					let statusTextClass = 'text-slate-500';
+					let statusIconColorClass = 'text-slate-400';
+
+					if (table.isTakeaway) {
+						statusIcon = 'delivery_dining';
+						statusIconColorClass = 'text-primary';
+						statusLabel = 'DOMICILIO / LLEVAR';
+					} else if (table.status === 'occupied') {
+						statusColorClass = 'bg-amber-500';
+						statusRingClass = 'ring-amber-100 dark:ring-amber-900/30';
+						statusBgClass = 'bg-amber-50 dark:bg-amber-900/20';
+						statusIcon = 'person';
+						statusLabel = 'En servicio...';
+						statusTextClass = 'text-amber-700 dark:text-amber-400 font-medium';
+						statusIconColorClass = 'text-amber-600 dark:text-amber-400';
+					} else if (table.status === 'reserved') {
+						statusColorClass = 'bg-slate-400';
+						statusRingClass = 'ring-slate-200 dark:ring-slate-700';
+						statusBgClass = 'bg-slate-200 dark:bg-slate-700';
+						statusIcon = 'event_seat';
+						statusLabel = 'Reservada';
+						statusTextClass = 'text-slate-500';
+					}
+
+					return `
+					<div class="bg-surface dark:bg-surface-dark rounded-xl p-4 border border-border-light dark:border-border-dark flex flex-col gap-3 relative overflow-hidden group hover:border-primary/50 transition-colors cursor-pointer ${table.isTakeaway ? 'border-primary/30 ring-1 ring-primary/10' : ''}" onclick="viewTableDetails('${table.id}')">
+						<div class="absolute top-3 right-3 w-2.5 h-2.5 rounded-full ${statusColorClass} ${statusRingClass}"></div>
+						<div class="w-12 h-12 rounded-full ${statusBgClass} flex items-center justify-center mb-1 group-hover:bg-primary/10 transition-colors">
+							<span class="material-symbols-outlined ${statusIconColorClass} group-hover:text-primary transition-colors">${statusIcon}</span>
+						</div>
+						<div>
+							<p class="text-sm font-bold text-slate-900 dark:text-white">${table.isTakeaway ? 'Domicilio' : 'Mesa'} ${table.number}</p>
+							<p class="text-xs ${statusTextClass}">${statusLabel}</p>
+						</div>
+					</div>
+					`;
+				}).join('');
+			}
+
+			// MESAS
+			function renderTables() {
+				const container = document.getElementById('tables-list');
+				if (!container) return;
+
+				container.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
+				container.innerHTML = AppState.tables.map(table => {
+					const order = table.currentOrder ? AppState.orders.find(o => o.id === table.currentOrder) : null;
+
+					// Reutilizar lógica visual del Dashboard para consistencia
+					let statusColorClass = 'bg-green-500';
+					let statusRingClass = 'ring-green-100 dark:ring-green-900/30';
+					let statusBgClass = 'bg-green-50 dark:bg-green-900/20';
+					let statusIcon = 'table_bar';
+					let statusLabel = `${table.capacity} Asientos`;
+					let statusTextClass = 'text-slate-500';
+					let iconColor = 'text-green-600 dark:text-green-400';
+
+					if (table.isTakeaway) {
+						statusIcon = 'delivery_dining';
+						iconColor = 'text-primary';
+						statusLabel = 'DOMICILIO / LLEVAR';
+						statusTextClass = 'text-primary font-medium';
+					} else if (table.status === 'occupied') {
+						statusColorClass = 'bg-amber-500';
+						statusRingClass = 'ring-amber-100 dark:ring-amber-900/30';
+						statusBgClass = 'bg-amber-50 dark:bg-amber-900/20';
+						statusIcon = 'person';
+						statusLabel = 'En servicio...';
+						statusTextClass = 'text-amber-700 dark:text-amber-400 font-medium';
+						iconColor = 'text-amber-600 dark:text-amber-400';
+					} else if (table.status === 'reserved') {
+						statusColorClass = 'bg-slate-400';
+						statusRingClass = 'ring-slate-200 dark:ring-slate-700';
+						statusBgClass = 'bg-slate-100 dark:bg-slate-800';
+						statusIcon = 'event_seat';
+						statusLabel = 'Reservada';
+						statusTextClass = 'text-slate-500';
+						iconColor = 'text-slate-400';
+					}
+
+					return `
+						<div class="bg-surface dark:bg-surface-dark rounded-2xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm hover:shadow-md transition-all group">
+							<div class="p-6">
+								<div class="flex justify-between items-start mb-6">
+									<div class="flex items-center gap-4">
+										<div class="w-12 h-12 rounded-2xl ${statusBgClass} flex items-center justify-center transition-colors">
+											<span class="material-symbols-outlined ${iconColor}">${statusIcon}</span>
+										</div>
+										<div>
+											<h3 class="text-lg font-bold text-slate-900 dark:text-white">${table.isTakeaway ? 'Domicilio' : 'Mesa'} ${table.number}</h3>
+											<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${statusLabel}</p>
+										</div>
+									</div>
+									<div class="w-2.5 h-2.5 rounded-full ${statusColorClass} ${statusRingClass} ring-4"></div>
+								</div>
+								
+								${order ? `
+								<div class="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/20">
+									<div class="flex justify-between items-center mb-1">
+										<span class="text-[10px] font-bold text-primary-dark uppercase tracking-wider">Total Acumulado</span>
+										<span class="text-sm font-bold text-primary-dark">${Utils.formatCurrency(order.total)}</span>
+									</div>
+									<p class="text-[10px] text-primary-dark/60 font-medium">${order.items.length} productos en la orden</p>
+								</div>
+								` : `
+								<div class="mb-6 p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 flex items-center justify-center">
+									<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lista para clientes</p>
+								</div>
+								`}
+
+								<div class="flex gap-2">
+									${table.status === 'occupied' ?
+							`<button class="flex-1 bg-amber-500 text-white hover:bg-amber-600 p-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm shadow-amber-200 dark:shadow-none" onclick="viewTableDetails('${table.id}')">
+											<span class="material-symbols-outlined text-[18px]">visibility</span> Ver Detalle
+										</button>` :
+							`<button class="flex-1 bg-primary text-primary-dark hover:bg-primary/90 p-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 shadow-sm" onclick="viewTableDetails('${table.id}')">
+											<span class="material-symbols-outlined text-[18px]">add_shopping_cart</span> Abrir Pedido
+										</button>`}
+									
+									<div class="flex gap-1">
+										<button class="w-10 h-10 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-400 hover:text-primary hover:border-primary rounded-xl flex items-center justify-center transition-all" onclick="editTable('${table.id}')">
+											<span class="material-symbols-outlined text-[18px]">edit</span>
+										</button>
+										<button class="w-10 h-10 bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-400 hover:text-red-500 hover:border-red-500 rounded-xl flex items-center justify-center transition-all" onclick="deleteTable('${table.id}')">
+											<span class="material-symbols-outlined text-[18px]">delete</span>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					`;
+				}).join('');
+			}
+
+			function openTableModal(tableId = null) {
+				if (tableId) {
+					currentEditingTable = AppState.tables.find(t => t.id === tableId);
+					document.getElementById('table-modal-title').textContent = 'Editar Mesa';
+					document.getElementById('table-number').value = currentEditingTable.number;
+					document.getElementById('table-capacity').value = currentEditingTable.capacity;
+				} else {
+					currentEditingTable = null;
+					document.getElementById('table-modal-title').textContent = 'Nueva Mesa';
+					document.getElementById('table-number').value = '';
+					document.getElementById('table-capacity').value = '4';
+				}
+				document.getElementById('table-modal').classList.add('show');
+			}
+
+			function closeTableModal() {
+				document.getElementById('table-modal').classList.remove('show');
+				currentEditingTable = null;
+			}
+
+			function editTable(tableId) {
+				openTableModal(tableId);
+			}
+
+			async function saveTable() {
+				const number = parseInt(document.getElementById('table-number').value);
+				const capacity = parseInt(document.getElementById('table-capacity').value);
+
+				if (!number || !capacity) {
+					Utils.showNotification('Completa todos los campos', 'warning');
+					return;
+				}
+
+				if (currentEditingTable) {
+					currentEditingTable.number = number;
+					currentEditingTable.capacity = capacity;
+					const index = AppState.tables.findIndex(t => t.id === currentEditingTable.id);
+					AppState.tables[index] = currentEditingTable;
+				} else {
+					AppState.tables.push({
+						id: Utils.generateId(),
+						number,
+						capacity,
+						status: 'available',
+						currentOrder: null
+					});
+				}
+
+				await API.save('tables', AppState.tables);
+				closeTableModal();
+				renderTables();
+				renderDashboard();
+				Utils.showNotification('Mesa guardada', 'success');
+			}
+
+			async function deleteTable(tableId) {
+				if (!confirm('¿Eliminar esta mesa?')) return;
+				AppState.tables = AppState.tables.filter(t => t.id !== tableId);
+				await API.save('tables', AppState.tables);
+				renderTables();
+				renderDashboard();
+				Utils.showNotification('Mesa eliminada', 'success');
+			}
+
+			async function freeTable(tableId) {
+				if (!confirm('¿Liberar esta mesa?')) return;
+				const table = AppState.tables.find(t => t.id === tableId);
+				if (table) {
+					table.status = 'available';
+					table.currentOrder = null;
+					await API.save('tables', AppState.tables);
+					renderTables();
+					renderDashboard();
+					Utils.showNotification('Mesa liberada', 'success');
+				}
+			}
+
+			// PEDIDOS
+			function renderOrders() {
+				const container = document.getElementById('orders-list');
+				if (!container) return;
+
+				const activeOrders = AppState.orders.filter(o => o.status === 'pending');
+
+				if (activeOrders.length === 0) {
+					container.innerHTML = `
+					<div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
+						<span class="material-symbols-outlined text-6xl mb-4 opacity-20">receipt_long</span>
+						<p class="text-lg font-medium">No hay pedidos activos actualmente</p>
+					</div>
+					`;
+					return;
+				}
+
+				container.innerHTML = activeOrders.map(order => `
+				<div class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+					<div class="p-5">
+						<div class="flex justify-between items-start mb-4">
+							<div>
+								<h3 class="font-bold text-slate-900 dark:text-white">Mesa ${order.tableNumber}</h3>
+								<p class="text-[10px] text-slate-500 font-medium">${Utils.formatDate(order.createdAt)}</p>
+							</div>
+							<span class="px-2 py-1 rounded-md text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100">PENDIENTE</span>
+						</div>
+						
+						<div class="space-y-3 mb-4">
+							${order.items.map(item => `
+								<div class="flex justify-between text-xs">
+									<div class="text-slate-600 dark:text-slate-400">
+										<span class="font-bold text-slate-900 dark:text-slate-200">${item.quantity}x</span> ${item.name}
+										${item.notes ? `<p class="text-[10px] text-slate-400 italic mt-0.5">"${item.notes}"</p>` : ''}
+									</div>
+									<span class="font-bold text-slate-700 dark:text-slate-300">${Utils.formatCurrency(item.price * item.quantity)}</span>
+								</div>
+							`).join('')}
+						</div>
+						
+						<div class="pt-4 border-t border-border-light dark:border-border-dark flex items-center justify-between mb-4">
+							<span class="text-xs font-bold text-slate-500 uppercase">Total</span>
+							<span class="text-xl font-bold text-primary-dark dark:text-primary">${Utils.formatCurrency(order.total)}</span>
+						</div>
+						
+						<div class="grid grid-cols-2 gap-2">
+							<button class="bg-primary text-primary-dark hover:bg-primary/90 px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1" onclick="completeOrder('${order.id}')">
+								<span class="material-symbols-outlined text-[16px]">payments</span> Facturar
+							</button>
+							<button class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1" onclick="cancelOrder('${order.id}')">
+								<span class="material-symbols-outlined text-[16px]">cancel</span> Anular
+							</button>
+						</div>
+					</div>
+				</div>
+				`).join('');
+			}
+
+			let isCompletingOrder = false;
+			let pendingOrderToComplete = null;
+
+			async function completeOrder(orderId) {
+				if (isCompletingOrder) {
+					return;
+				}
+
+				const order = AppState.orders.find(o => o.id === orderId);
+				if (!order) {
+					Utils.showNotification('Pedido no encontrado', 'error');
+					return;
+				}
+
+				// Verificar si la orden ya está completada
+				if (order.status === 'completed') {
+					alert('⚠️ Este pedido ya fue completado anteriormente.\n\nSi no lo ves en la lista, actualiza la página.');
+					return;
+				}
+
+				// Verificar si ya existe una transacción para esta orden (protección contra duplicados)
+				const existingTransaction = AppState.transactions.find(t => t.orderId === orderId);
+				if (existingTransaction) {
+					alert('⚠️ Ya existe una transacción para este pedido.\n\nVerifica en la sección de Finanzas.');
+					return;
+				}
+
+				// Mostrar modal de método de pago
+				pendingOrderToComplete = order;
+				const modal = document.getElementById('payment-method-modal');
+				const infoDiv = document.getElementById('payment-method-info');
+				infoDiv.innerHTML = `
+				<p style="margin: 0; color: var(--muted);">Mesa: <strong style="color: #fff;">${order.tableNumber}</strong></p>
+				<p style="margin: 5px 0 0 0; color: var(--muted);">Total: <strong style="color: var(--success); font-size: 18px;">${Utils.formatCurrency(order.total)}</strong></p>
+			`;
+				modal.style.display = 'flex';
+			}
+
+			function closePaymentMethodModal() {
+				document.getElementById('payment-method-modal').style.display = 'none';
+				pendingOrderToComplete = null;
+				// NOTA: No resetear isCompletingOrder aquí - se maneja en confirmPaymentMethod
+			}
+
+			async function confirmPaymentMethod() {
+				if (!pendingOrderToComplete) return;
+
+				const paymentMethod = document.getElementById('payment-method-select').value;
+				const order = pendingOrderToComplete;
+
+				// Verificar una vez más que la orden no esté completada
+				if (order.status === 'completed') {
+					closePaymentMethodModal();
+					alert('⚠️ Este pedido ya fue completado.');
+					return;
+				}
+
+				// PRIMERO: Bloquear todas las recargas antes de cerrar modal
+				isCompletingOrder = true;
+				isCriticalOperation = true;
+
+				// Pausar auto-refresh ANTES de cualquier otra operación
+				if (autoRefreshInterval) {
+					clearInterval(autoRefreshInterval);
+					autoRefreshInterval = null;
+				}
+
+				// Cerrar modal después de bloquear recargas
+				document.getElementById('payment-method-modal').style.display = 'none';
+				pendingOrderToComplete = null;
+
+				try {
+
+					// 1. Actualizar orden INMEDIATAMENTE en estado local para evitar doble click
+					order.status = 'completed';
+					order.completedAt = new Date().toISOString();
+					order.paymentMethod = paymentMethod;
+
+					// 2. Crear transacción con método de pago
+					const transaction = {
+						id: Utils.generateId(),
+						orderId: order.id,
+						tableNumber: order.tableNumber,
+						amount: order.total,
+						type: 'sale',
+						paymentMethod: paymentMethod,
+						date: new Date().toISOString(),
+						concept: `Mesa ${order.tableNumber} - ${order.items.length} productos`
+					};
+					AppState.transactions.push(transaction);
+
+					// 3. Liberar mesa
+					const table = AppState.tables.find(t => t.id === order.tableId);
+					if (table) {
+						if (table.isTakeaway || order.isTakeaway) {
+							AppState.tables = AppState.tables.filter(t => t.id !== table.id);
+						} else {
+							table.status = 'available';
+							table.currentOrder = null;
+						}
+					}
+
+					// 4. Actualizar UI INMEDIATAMENTE antes de guardar
+					renderOrders();
+					renderDashboard();
+					renderTables();
+
+					// 5. GUARDAR TODO EN SERVIDOR (ESPERAR CONFIRMACIÓN)
+					await Promise.all([
+						API.save('orders', AppState.orders),
+						API.save('transactions', AppState.transactions),
+						API.save('tables', AppState.tables)
+					]);
+
+					// 6. Generar PDF después de confirmar guardado
+					await generateInvoicePDF(order);
+
+					// 7. RECARGAR DATOS DESDE SERVIDOR para garantizar sincronización
+					await loadInitialData();
+
+					// 8. Actualizar UI con datos frescos del servidor
+					renderOrders();
+					renderDashboard();
+					renderTables();
+					renderFinance();
+					generateProfitabilityReport();
+
+				} catch (error) {
+					console.error('Error completando orden:', error);
+
+					// Si falla, revertir el estado de la orden
+					order.status = 'pending';
+					delete order.completedAt;
+					delete order.paymentMethod;
+
+					// Remover la transacción que se agregó
+					AppState.transactions = AppState.transactions.filter(t => t.orderId !== order.id);
+
+					// Intentar recargar datos desde servidor para restaurar estado correcto
+					try {
+						await loadInitialData();
+					} catch (loadError) {
+						console.error('No se pudo recargar datos:', loadError);
+					}
+
+					// Actualizar UI
+					renderOrders();
+					renderDashboard();
+					renderTables();
+					renderFinance();
+
+					// Una sola alerta clara
+					alert('❌ ERROR AL COMPLETAR PEDIDO\n\nNo se pudo guardar en el servidor.\n\nPosibles causas:\n- Sin conexión a internet\n- Servidor fuera de línea\n\nPor favor verifica tu conexión e intenta nuevamente.');
+
+				} finally {
+					isCompletingOrder = false;
+					isCriticalOperation = false;
+					// Reiniciar auto-refresh
+					startAutoRefresh();
+				}
+			}
+
+			let isCancellingOrder = false;
+
+			async function cancelOrder(orderId) {
+				if (isCancellingOrder) {
+					return;
+				}
+
+				if (!confirm('¿Estás seguro de cancelar este pedido?')) return;
+
+				isCancellingOrder = true;
+				isCriticalOperation = true;
+
+				try {
+					// Pausar auto-refresh
+					if (autoRefreshInterval) {
+						clearInterval(autoRefreshInterval);
+						autoRefreshInterval = null;
+					}
+
+					const order = AppState.orders.find(o => o.id === orderId);
+					if (!order) {
+						throw new Error('Pedido no encontrado');
+					}
+
+					order.status = 'cancelled';
+
+					const table = AppState.tables.find(t => t.id === order.tableId);
+					if (table) {
+						table.status = 'available';
+						table.currentOrder = null;
+					}
+
+					// GUARDAR EN SERVIDOR Y ESPERAR CONFIRMACIÓN
+					await Promise.all([
+						API.save('orders', AppState.orders),
+						API.save('tables', AppState.tables)
+					]);
+
+					// RECARGAR desde servidor
+					await loadInitialData();
+
+					// Actualizar UI
+					renderOrders();
+					renderDashboard();
+					renderTables();
+					renderFinance();
+
+				} catch (error) {
+					console.error('Error cancelando orden:', error);
+
+					// Intentar recargar datos
+					try {
+						await loadInitialData();
+						renderOrders();
+						renderDashboard();
+						renderTables();
+					} catch (loadError) {
+						console.error('No se pudo recargar datos:', loadError);
+					}
+
+					alert('❌ ERROR AL CANCELAR PEDIDO\n\nNo se pudo guardar en el servidor.\nVerifica tu conexión e intenta nuevamente.');
+
+				} finally {
+					isCancellingOrder = false;
+					isCriticalOperation = false;
+					startAutoRefresh();
+				}
+			}		// MENÚ CONFIG
+			function renderMenuConfig() {
+				const tbody = document.querySelector('#menu-table tbody');
+				if (!tbody) return;
+
+				tbody.innerHTML = AppState.menuItems.map(item => {
+					const cost = item.cost || 0;
+					const profit = item.price - cost;
+					const margin = item.price > 0 ? ((profit / item.price) * 100).toFixed(1) : 0;
+					const isAvailable = item.available !== false;
+
+					return `
+					<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+						<td class="px-6 py-4">
+							<div class="flex items-center gap-3">
+								<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-border-light dark:border-border-dark">
+									${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<span class="material-symbols-outlined text-slate-400">restaurant</span>`}
+								</div>
+								<div>
+									<p class="text-sm font-bold text-slate-900 dark:text-white">${item.name}</p>
+									<p class="text-[10px] text-slate-500 line-clamp-1 max-w-[200px]">${item.description || 'Sin descripción'}</p>
+								</div>
+							</div>
+						</td>
+						<td class="px-6 py-4">
+							<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 uppercase">
+								${item.category}
+							</span>
+						</td>
+						<td class="px-6 py-4 text-right text-sm font-medium text-slate-500">${Utils.formatCurrency(cost)}</td>
+						<td class="px-6 py-4 text-right text-sm font-bold text-slate-900 dark:text-white">${Utils.formatCurrency(item.price)}</td>
+						<td class="px-6 py-4 text-right text-sm font-bold text-primary-dark dark:text-primary">${Utils.formatCurrency(profit)}</td>
+						<td class="px-6 py-4 text-center">
+							<button onclick="toggleProductAvailability('${item.id}')" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all ${isAvailable ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+								<span class="w-1.5 h-1.5 rounded-full ${isAvailable ? 'bg-green-500' : 'bg-slate-400'}"></span>
+								${isAvailable ? 'VISIBLE' : 'OCULTO'}
+							</button>
+						</td>
+						<td class="px-6 py-4 text-right">
+							<div class="flex items-center justify-end gap-2">
+								<button class="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" onclick="editMenuItem('${item.id}')">
+									<span class="material-symbols-outlined text-[18px]">edit</span>
+								</button>
+								<button class="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors" onclick="deleteMenuItem('${item.id}')">
+									<span class="material-symbols-outlined text-[18px]">delete</span>
+								</button>
+							</div>
+						</td>
+					</tr>
+					`;
+				}).join('');
+			}
+
+			function openMenuItemModal(itemId = null) {
+				if (itemId) {
+					currentEditingMenuItem = AppState.menuItems.find(i => i.id === itemId);
+					document.getElementById('menu-item-modal-title').textContent = 'Editar Producto';
+					document.getElementById('item-name').value = currentEditingMenuItem.name;
+					document.getElementById('item-description').value = currentEditingMenuItem.description || '';
+					document.getElementById('item-category').value = currentEditingMenuItem.category;
+					document.getElementById('item-cost').value = currentEditingMenuItem.cost || 0;
+					document.getElementById('item-price').value = currentEditingMenuItem.price;
+					document.getElementById('item-available').checked = currentEditingMenuItem.available;
+					document.getElementById('item-image').value = currentEditingMenuItem.image || '';
+					if (currentEditingMenuItem.image) {
+						showImagePreview(currentEditingMenuItem.image);
+					} else {
+						clearImagePreview();
+					}
+					updateProfitPreview();
+				} else {
+					currentEditingMenuItem = null;
+					document.getElementById('menu-item-modal-title').textContent = 'Nuevo Producto';
+					document.getElementById('item-name').value = '';
+					document.getElementById('item-description').value = '';
+					document.getElementById('item-category').value = '';
+					document.getElementById('item-cost').value = '0';
+					document.getElementById('item-price').value = '';
+					document.getElementById('item-available').checked = true;
+					document.getElementById('item-image').value = '';
+					document.getElementById('profit-preview').style.display = 'none';
+					clearImagePreview();
+				}
+				document.getElementById('menu-item-modal').classList.add('show');
+			}
+
+			function closeMenuItemModal() {
+				document.getElementById('menu-item-modal').classList.remove('show');
+				currentEditingMenuItem = null;
+			}
+
+			function editMenuItem(itemId) {
+				openMenuItemModal(itemId);
+			}
+
+			// Manejar carga de imagen
+			function handleImageUpload(input) {
+				if (input.files && input.files[0]) {
+					const reader = new FileReader();
+					reader.onload = function (e) {
+						const imageData = e.target.result;
+						document.getElementById('item-image').value = imageData;
+						showImagePreview(imageData);
+					};
+					reader.readAsDataURL(input.files[0]);
+				}
+			}
+
+			function showImagePreview(imageUrl) {
+				if (!imageUrl) {
+					document.getElementById('item-image-preview').innerHTML = '';
+					return;
+				}
+				document.getElementById('item-image-preview').innerHTML = `
+				<div style="position: relative; display: inline-block;">
+					<img src="${imageUrl}" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid var(--accent);">
+					<button onclick="clearImagePreview()" style="position: absolute; top: 5px; right: 5px; background: var(--danger); color: #fff; border: 0; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;">X</button>
+				</div>
+			`;
+			}
+
+			function clearImagePreview() {
+				document.getElementById('item-image').value = '';
+				document.getElementById('item-image-file').value = '';
+				document.getElementById('item-image-preview').innerHTML = '';
+			}
+
+			function updateProfitPreview() {
+				const cost = parseFloat(document.getElementById('item-cost').value) || 0;
+				const price = parseFloat(document.getElementById('item-price').value) || 0;
+
+				if (price > 0 && cost >= 0) {
+					const profit = price - cost;
+					const margin = ((profit / price) * 100).toFixed(1);
+
+					document.getElementById('profit-amount').textContent = Utils.formatCurrency(profit);
+					document.getElementById('profit-margin').textContent = margin + '%';
+					document.getElementById('profit-preview').style.display = 'block';
+				} else {
+					document.getElementById('profit-preview').style.display = 'none';
+				}
+			}
+
+			async function saveMenuItem() {
+				const name = document.getElementById('item-name').value.trim();
+				const description = document.getElementById('item-description').value.trim();
+				const category = document.getElementById('item-category').value.trim();
+				const cost = parseFloat(document.getElementById('item-cost').value) || 0;
+				const price = parseFloat(document.getElementById('item-price').value);
+				const available = document.getElementById('item-available').checked;
+				const image = document.getElementById('item-image').value.trim();
+
+				if (!name || !category || !price) {
+					Utils.showNotification('Completa los campos requeridos', 'warning');
+					return;
+				}
+
+				if (currentEditingMenuItem) {
+					currentEditingMenuItem.name = name;
+					currentEditingMenuItem.description = description;
+					currentEditingMenuItem.category = category;
+					currentEditingMenuItem.cost = cost;
+					currentEditingMenuItem.price = price;
+					currentEditingMenuItem.available = available;
+					currentEditingMenuItem.image = image;
+					const index = AppState.menuItems.findIndex(i => i.id === currentEditingMenuItem.id);
+					AppState.menuItems[index] = currentEditingMenuItem;
+				} else {
+					AppState.menuItems.push({
+						id: Utils.generateId(),
+						name,
+						description,
+						category,
+						cost,
+						price,
+						available,
+						image
+					});
+				}
+
+				await API.save('menu_items', AppState.menuItems);
+				closeMenuItemModal();
+				renderMenuConfig();
+				Utils.showNotification('Producto guardado', 'success');
+			}
+
+			async function deleteMenuItem(itemId) {
+				if (!confirm('¿Eliminar este producto?')) return;
+				AppState.menuItems = AppState.menuItems.filter(i => i.id !== itemId);
+				await API.save('menu_items', AppState.menuItems);
+				renderMenuConfig();
+				Utils.showNotification('Producto eliminado', 'success');
+			}
+
+			async function toggleProductAvailability(itemId) {
+				const item = AppState.menuItems.find(i => i.id === itemId);
+				if (!item) return;
+
+				// Cambiar el estado
+				item.available = !item.available;
+
+				// Actualizar UI inmediatamente
+				renderMenuConfig();
+
+				// Guardar en servidor en segundo plano
+				API.save('menu_items', AppState.menuItems).catch(error => {
+					console.error('Error guardando disponibilidad:', error);
+					// Revertir cambio si falla
+					item.available = !item.available;
+					renderMenuConfig();
+					alert('Error al actualizar. Intenta de nuevo.');
+				});
+			}
+
+			async function deleteTransaction(transactionId) {
+				if (!confirm('¿Eliminar esta transacción?')) return;
+				AppState.transactions = AppState.transactions.filter(t => t.id !== transactionId);
+				await API.save('transactions', AppState.transactions);
+				renderFinance();
+				renderDashboard();
+				Utils.showNotification('Transacción eliminada', 'success');
+			}
+
+			async function viewTransactionInvoice(transactionId) {
+				const transaction = AppState.transactions.find(t => t.id === transactionId);
+				if (!transaction || !transaction.orderId) {
+					alert('Esta transacción no tiene una factura asociada.');
+					return;
+				}
+
+				const order = AppState.orders.find(o => o.id === transaction.orderId);
+				if (!order) {
+					alert('No se encontró la orden asociada a esta transacción.');
+					return;
+				}
+
+				// Mostrar modal con detalles de la orden y generar PDF
+				const modal = document.createElement('div');
+				modal.className = 'modal';
+				modal.style.display = 'flex';
+				modal.innerHTML = `
+				<div class="panel" style="max-width: 600px;">
+					<div class="modal-header">
+						<h3>Factura - Mesa ${order.tableNumber}</h3>
+						<button class="modal-close" onclick="this.closest('.modal').remove()" aria-label="Cerrar">X</button>
+					</div>
+					<div style="padding: 20px;">
+						<div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+							<p style="color: var(--muted); margin-bottom: 5px;">Fecha: ${Utils.formatDate(order.createdAt)}</p>
+							<p style="color: var(--muted); margin-bottom: 5px;">Mesa: ${order.tableNumber}</p>
+							<p style="color: var(--muted); margin-bottom: 10px;">Estado: ${order.status === 'completed' ? 'Completado' : order.status}</p>
+						</div>
+						
+						<h4 style="color: var(--accent); margin-bottom: 10px;">Productos:</h4>
+						<div style="max-height: 300px; overflow-y: auto;">
+							${order.items.map(item => `
+								<div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; margin-bottom: 8px;">
+									<div>
+										<strong>${item.name}</strong>
+										<br><small style="color: var(--muted);">Cantidad: ${item.quantity} x ${Utils.formatCurrency(item.price)}</small>
+										${item.notes ? `<br><small style="color: var(--muted); font-style: italic;">Nota: ${item.notes}</small>` : ''}
+									</div>
+									<div style="font-weight: 600; color: var(--success);">${Utils.formatCurrency(item.price * item.quantity)}</div>
+								</div>
+							`).join('')}
+						</div>
+						
+						<div style="background: linear-gradient(135deg, #4caf50, #45a049); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center;">
+							<div style="font-size: 14px; color: #fff; margin-bottom: 5px;">TOTAL</div>
+							<div style="font-size: 32px; font-weight: 700; color: #fff;">${Utils.formatCurrency(order.total)}</div>
+						</div>
+						
+						<div style="margin-top: 20px; display: flex; gap: 10px;">
+							<button class="btn" onclick="generateInvoicePDF(AppState.orders.find(o => o.id === '${order.id}'))" style="flex: 1;"><span class="icon-dot icon-dot--info"></span><span>Descargar PDF</span></button>
+							<button class="btn btn-secondary" onclick="this.closest('.modal').remove()" style="flex: 1;">Cerrar</button>
+						</div>
+					</div>
+				</div>
+			`;
+				document.body.appendChild(modal);
+			}
+
+			// VER DETALLE DE MESA
+			// MODAL DE PEDIDOS
+			let currentOrderTable = null;
+			let currentOrderItems = [];
+
+			function openOrderModal(tableId) {
+				const table = AppState.tables.find(t => t.id === tableId);
+				if (!table) return;
+
+				currentOrderTable = table;
+
+				// Si la mesa ya tiene un pedido, cargar sus items
+				if (table.currentOrder) {
+					const existingOrder = AppState.orders.find(o => o.id === table.currentOrder);
+					if (existingOrder) {
+						currentOrderItems = JSON.parse(JSON.stringify(existingOrder.items));
+					}
+				} else {
+					currentOrderItems = [];
+				}
+
+				document.getElementById('order-modal-title').textContent = `Mesa ${table.number} - ${table.currentOrder ? 'Editar' : 'Nuevo'} Pedido`;
+				renderOrderModalMenu();
+				updateOrderSummary();
+				document.getElementById('order-modal').classList.add('show');
+			}
+
+			function closeOrderModal() {
+				document.getElementById('order-modal').classList.remove('show');
+				currentOrderTable = null;
+				currentOrderItems = [];
+			}
+
+			function renderOrderModalMenu() {
+				const categories = [...new Set(AppState.menuItems.filter(i => i.available).map(i => i.category))];
+				const container = document.getElementById('order-menu-items');
+
+				container.innerHTML = categories.map(category => `
+				<div style="margin-bottom: 25px;">
+					<h4 style="color: var(--accent); margin-bottom: 15px; border-bottom: 2px solid var(--accent); padding-bottom: 8px;">${category}</h4>
+					<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+						${AppState.menuItems
+						.filter(item => item.category === category && item.available)
+						.map(item => `
+								<div class="menu-item-btn" onclick="addItemToOrder('${item.id}')" style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; cursor: pointer; transition: all 0.3s; border: 2px solid transparent;" onmouseover="this.style.borderColor='var(--accent)'; this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.borderColor='transparent'; this.style.background='rgba(255,255,255,0.05)'">
+									<div style="font-weight: 600; margin-bottom: 5px;">${item.name}</div>
+									<div style="color: var(--accent); font-size: 18px; font-weight: 700;">${Utils.formatCurrency(item.price)}</div>
+								</div>
+							`).join('')}
+					</div>
+				</div>
+			`).join('');
+			}
+
+			function addItemToOrder(itemId) {
+				const menuItem = AppState.menuItems.find(i => i.id === itemId);
+				if (!menuItem) return;
+
+				const existingItem = currentOrderItems.find(i => i.menuItemId === itemId && !i.notes);
+
+				if (existingItem) {
+					existingItem.quantity++;
+				} else {
+					currentOrderItems.push({
+						menuItemId: itemId,
+						name: menuItem.name,
+						price: menuItem.price,
+						quantity: 1,
+						notes: ''
+					});
+				}
+
+				updateOrderSummary();
+			}
+
+			function updateOrderSummary() {
+				const container = document.getElementById('order-items-summary');
+
+				if (currentOrderItems.length === 0) {
+					container.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 20px;">No hay productos en el pedido</p>';
+					document.getElementById('order-total-amount').textContent = Utils.formatCurrency(0);
+					return;
+				}
+
+				const total = currentOrderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+				container.innerHTML = currentOrderItems.map((item, index) => `
+				<div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid var(--accent);">
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+						<strong>${item.name}</strong>
+						<button class="btn btn-small btn-danger" onclick="removeItemFromOrder(${index})" style="padding: 4px 8px;"><span class="icon-dot icon-dot--danger"></span><span>Quitar</span></button>
+					</div>
+					<div style="display: flex; gap: 10px; align-items: center;">
+						<button onclick="changeQuantity(${index}, -1)" style="width: 30px; height: 30px; border-radius: 50%; border: 0; background: #ffffff; color: #000000; cursor: pointer; font-size: 18px;">-</button>
+						<span style="font-size: 18px; font-weight: 700; min-width: 30px; text-align: center;">${item.quantity}</span>
+						<button onclick="changeQuantity(${index}, 1)" style="width: 30px; height: 30px; border-radius: 50%; border: 0; background: #ffffff; color: #000000; cursor: pointer; font-size: 18px;">+</button>
+						<span style="margin-left: auto; color: var(--accent); font-weight: 700;">${Utils.formatCurrency(item.price * item.quantity)}</span>
+					</div>
+					<textarea placeholder="Notas especiales..." onchange="updateItemNotes(${index}, this.value)" style="width: 100%; margin-top: 8px; min-height: 40px; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: var(--text); font-size: 13px;">${item.notes || ''}</textarea>
+				</div>
+			`).join('');
+
+				document.getElementById('order-total-amount').textContent = Utils.formatCurrency(total);
+			}
+
+			function changeQuantity(index, delta) {
+				if (currentOrderItems[index]) {
+					currentOrderItems[index].quantity += delta;
+					if (currentOrderItems[index].quantity <= 0) {
+						currentOrderItems.splice(index, 1);
+					}
+					updateOrderSummary();
+				}
+			}
+
+			function removeItemFromOrder(index) {
+				currentOrderItems.splice(index, 1);
+				updateOrderSummary();
+			}
+
+			function updateItemNotes(index, notes) {
+				if (currentOrderItems[index]) {
+					currentOrderItems[index].notes = notes;
+				}
+			}
+
+			let isSavingOrder = false;
+
+			async function saveOrderFromModal() {
+				if (isSavingOrder) {
+					return;
+				}
+
+				if (!currentOrderTable || currentOrderItems.length === 0) {
+					alert('Agrega al menos un producto');
+					return;
+				}
+
+				isSavingOrder = true;
+
+				try {
+					// Pausar auto-refresh
+					if (autoRefreshInterval) {
+						clearInterval(autoRefreshInterval);
+					}
+
+					const total = currentOrderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+					// Encontrar la mesa en el estado global
+					const tableInState = AppState.tables.find(t => t.id === currentOrderTable.id);
+					if (!tableInState) {
+						throw new Error('Mesa no encontrada');
+					}
+
+					if (tableInState.currentOrder) {
+						// Actualizar pedido existente
+						const order = AppState.orders.find(o => o.id === tableInState.currentOrder);
+						if (order) {
+							order.items = [...currentOrderItems];
+							order.total = total;
+							order.updatedAt = new Date().toISOString();
+						}
+					} else {
+						// Crear nuevo pedido
+						const newOrder = {
+							id: Utils.generateId(),
+							tableId: tableInState.id,
+							tableNumber: tableInState.number,
+							items: [...currentOrderItems],
+							total: total,
+							status: 'pending',
+							createdAt: new Date().toISOString()
+						};
+						AppState.orders.push(newOrder);
+
+						// Actualizar la mesa en el estado global
+						tableInState.currentOrder = newOrder.id;
+						tableInState.status = 'occupied';
+					}
+
+					// GUARDAR EN SERVIDOR Y ESPERAR CONFIRMACIÓN
+					await Promise.all([
+						API.save('orders', AppState.orders),
+						API.save('tables', AppState.tables)
+					]);
+
+					// RECARGAR desde servidor para garantizar sincronización
+					await loadInitialData();
+
+					// Cerrar modal y actualizar UI
+					closeOrderModal();
+					renderAllSections();
+
+				} catch (error) {
+					console.error('Error guardando pedido:', error);
+
+					// Intentar recargar datos
+					try {
+						await loadInitialData();
+						renderAllSections();
+					} catch (loadError) {
+						console.error('No se pudo recargar datos:', loadError);
+					}
+
+					alert('❌ ERROR AL GUARDAR PEDIDO\n\nNo se pudo guardar en el servidor.\nVerifica tu conexión e intenta nuevamente.');
+
+				} finally {
+					isSavingOrder = false;
+					startAutoRefresh();
+				}
+			}
+
+			function viewTableDetails(tableId) {
+				const table = AppState.tables.find(t => t.id === tableId);
+				if (!table) return;
+
+				// Si la mesa no tiene pedido (está disponible), abrir toma de pedidos
+				if (!table.currentOrder) {
+					openOrderModal(tableId);
+					return;
+				}
+
+				const order = AppState.orders.find(o => o.id === table.currentOrder);
+				if (!order) return;
+
+				document.getElementById('table-detail-title').textContent = `Mesa ${table.number} - Detalle`;
+
+				const content = document.getElementById('table-detail-content');
+				content.innerHTML = `
+				<div style="margin-bottom: 20px;">
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+						<div>
+							<strong style="color: var(--accent); font-size: 18px;">Mesa ${table.number}</strong>
+							<div class="small" style="color: var(--muted);">${Utils.formatDate(order.createdAt)}</div>
+						</div>
+						<span class="badge badge-warning">Activo</span>
+					</div>
+					
+					<div class="order-items-list" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+						<h4 style="color: var(--accent); margin-bottom: 10px;">Productos</h4>
+						${order.items.map(item => `
+							<div class="order-item-line" style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+								<div>
+									<strong>${item.quantity}x ${item.name}</strong>
+									${item.notes ? `<br><small style="color: var(--muted); font-size: 12px;">Nota: ${item.notes}</small>` : ''}
+								</div>
+								<div style="color: var(--success); font-weight: 600;">
+									${Utils.formatCurrency(item.price * item.quantity)}
+								</div>
+							</div>
+						`).join('')}
+					</div>
+					
+					<div style="text-align: right; padding: 15px; background: rgba(76, 175, 80, 0.1); border-radius: 8px; border: 2px solid var(--success);">
+						<div style="font-size: 14px; color: var(--muted); margin-bottom: 5px;">Total a Pagar</div>
+						<div style="font-size: 28px; font-weight: 700; color: var(--success);">
+							${Utils.formatCurrency(order.total)}
+						</div>
+					</div>
+					
+					<div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+						<button class="btn btn-warning" onclick="generateInvoicePDFFromModal('${order.id}')"><span class="icon-dot icon-dot--warning"></span><span>Generar PDF</span></button>
+						<button class="btn btn-success" onclick="completeOrderFromModal('${order.id}')"><span class="icon-dot icon-dot--success"></span><span>Completar y Facturar</span></button>
+						<button class="btn btn-secondary" onclick="closeTableDetailModal()">Cerrar</button>
+					</div>
+				</div>
+			`;
+
+				document.getElementById('table-detail-modal').classList.add('show');
+			}
+
+			function closeTableDetailModal() {
+				document.getElementById('table-detail-modal').classList.remove('show');
+			}
+
+			async function generateInvoicePDFFromModal(orderId) {
+				const order = AppState.orders.find(o => o.id === orderId);
+				if (order) {
+					await generateInvoicePDF(order);
+					Utils.showNotification('PDF generado', 'success');
+				}
+			}
+
+			async function completeOrderFromModal(orderId) {
+				closeTableDetailModal();
+				await completeOrder(orderId);
+			}
+
+			// CIERRE DE CAJA
+			async function generateCloseCash() {
+				const today = Utils.getDateKey();
+				const todayTransactions = AppState.transactions.filter(t => Utils.getDateKeyFromISO(t.date) === today);
+
+				const totalSales = todayTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+				const totalTransactions = todayTransactions.length;
+				const completedOrders = AppState.orders.filter(o =>
+					o.status === 'completed' && Utils.getDateKeyFromISO(o.completedAt) === today
+				).length;
+
+				const container = document.getElementById('close-cash-content');
+				container.innerHTML = `
+				<div class="close-cash-summary">
+					<h2>Cierre de Caja - ${new Date().toLocaleDateString('es-MX')}</h2>
+					<div class="close-cash-line">
+						<span>Ventas registradas:</span>
+						<span>${totalTransactions}</span>
+					</div>
+					<div class="close-cash-line">
+						<span>Pedidos Completados:</span>
+						<span>${completedOrders}</span>
+					</div>
+					<div class="close-cash-line">
+						<span>Ingreso Bruto:</span>
+						<span>${Utils.formatCurrency(totalSales)}</span>
+					</div>
+					<div class="close-cash-total">
+						Total del Día: ${Utils.formatCurrency(totalSales)}
+					</div>
+					<div style="margin-top: 20px; display: flex; gap: 10px;">
+						<button class="btn" onclick="generateCloseCashPDF()"><span class="icon-dot icon-dot--info"></span><span>Ver PDF</span></button>
+						<button class="btn btn-success" onclick="saveCloseCash()"><span class="icon-dot icon-dot--success"></span><span>Guardar Cierre</span></button>
+					</div>
+				</div>
+			`;
+
+				document.getElementById('closure-history').style.display = 'none';
+			}
+
+			async function saveCloseCash() {
+				const today = Utils.getDateKey();
+				const todayTransactions = AppState.transactions.filter(t => Utils.getDateKeyFromISO(t.date) === today);
+
+				// Verificar si ya existe un cierre para hoy
+				const existingClosure = AppState.cashClosures.find(c => c.date === today);
+				if (existingClosure) {
+					if (!confirm('Ya existe un cierre para hoy. ¿Deseas actualizarlo?')) return;
+				}
+
+				const totalSales = todayTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+				const completedOrders = AppState.orders.filter(o =>
+					o.status === 'completed' && Utils.getDateKeyFromISO(o.completedAt) === today
+				).length;
+
+				const closure = {
+					id: existingClosure ? existingClosure.id : Utils.generateId(),
+					date: today,
+					totalTransactions: todayTransactions.length,
+					totalSales: totalSales,
+					completedOrders: completedOrders,
+					transactions: todayTransactions,
+					createdAt: existingClosure ? existingClosure.createdAt : new Date().toISOString(),
+					updatedAt: new Date().toISOString()
+				};
+
+				if (existingClosure) {
+					const index = AppState.cashClosures.findIndex(c => c.id === closure.id);
+					AppState.cashClosures[index] = closure;
+				} else {
+					AppState.cashClosures.push(closure);
+				}
+
+				await API.save('cash_closures', AppState.cashClosures);
+				Utils.showNotification('Cierre de caja guardado correctamente', 'success');
+			}
+
+			function viewClosureHistory() {
+				document.getElementById('close-cash-content').innerHTML = `
+				<p class="text-center" style="color: var(--muted); padding: 40px;">
+					Selecciona "Generar Cierre Actual" para ver el resumen del día o revisa el historial abajo
+				</p>
+			`;
+
+				const historyDiv = document.getElementById('closure-history');
+				historyDiv.style.display = 'block';
+
+				const tbody = document.querySelector('#closures-table tbody');
+				const sorted = [...AppState.cashClosures].sort((a, b) =>
+					new Date(b.date) - new Date(a.date)
+				);
+
+				if (sorted.length === 0) {
+					tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="color: var(--muted); padding: 40px;">No hay cierres guardados</td></tr>';
+					return;
+				}
+
+				tbody.innerHTML = sorted.map(closure => `
+				<tr>
+					<td>${new Date(closure.date).toLocaleDateString('es-MX')}</td>
+					<td>${closure.totalTransactions} ventas</td>
+					<td style="color: var(--success); font-weight: 600;">${Utils.formatCurrency(closure.totalSales)}</td>
+					<td>
+						<button class="btn btn-small btn-warning" onclick="viewClosureDetail('${closure.id}')"><span class="icon-dot icon-dot--warning"></span><span>Ver</span></button>
+						<button class="btn btn-small btn-secondary" onclick="generateClosurePDF('${closure.id}')"><span class="icon-dot icon-dot--secondary"></span><span>PDF</span></button>
+						<button class="btn btn-small btn-danger" onclick="deleteClosure('${closure.id}')"><span class="icon-dot icon-dot--danger"></span><span>Eliminar</span></button>
+					</td>
+				</tr>
+			`).join('');
+			}
+
+			function viewClosureDetail(closureId) {
+				const closure = AppState.cashClosures.find(c => c.id === closureId);
+				if (!closure) return;
+
+				const container = document.getElementById('close-cash-content');
+				container.innerHTML = `
+				<div class="close-cash-summary">
+					<h2>Cierre de Caja - ${new Date(closure.date).toLocaleDateString('es-MX')}</h2>
+					<div class="close-cash-line">
+						<span>Ventas registradas:</span>
+						<span>${closure.totalTransactions}</span>
+					</div>
+					<div class="close-cash-line">
+						<span>Pedidos Completados:</span>
+						<span>${closure.completedOrders}</span>
+					</div>
+					<div class="close-cash-line">
+						<span>Ingreso Bruto:</span>
+						<span>${Utils.formatCurrency(closure.totalSales)}</span>
+					</div>
+					<div class="close-cash-total">
+						Total del Día: ${Utils.formatCurrency(closure.totalSales)}
+					</div>
+					<div style="margin-top: 20px;">
+						<button class="btn" onclick="generateClosurePDF('${closure.id}')"><span class="icon-dot icon-dot--info"></span><span>Ver PDF</span></button>
+					</div>
+				</div>
+			`;
+
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}
+
+			function generateClosurePDF(closureId) {
+				const closure = AppState.cashClosures.find(c => c.id === closureId);
+				if (!closure) return;
+
+				const { jsPDF } = window.jspdf;
+				const doc = new jsPDF();
+
+				doc.setFontSize(20);
+				doc.text('CIERRE DE CAJA', 105, 20, { align: 'center' });
+				doc.setFontSize(12);
+				doc.text(`Fecha: ${new Date(closure.date).toLocaleDateString('es-MX')}`, 105, 30, { align: 'center' });
+
+				doc.setLineWidth(0.5);
+				doc.line(20, 35, 190, 35);
+
+				let y = 48;
+				doc.setFontSize(14);
+				doc.text('Resumen del Día', 20, y);
+				y += 10;
+
+				doc.setFontSize(11);
+				doc.text(`Total de Transacciones: ${closure.totalTransactions}`, 20, y);
+				y += 8;
+				doc.text(`Pedidos Completados: ${closure.completedOrders}`, 20, y);
+				y += 8;
+				doc.text(`Ingresos Totales: ${Utils.formatCurrency(closure.totalSales)}`, 20, y);
+				y += 15;
+
+				if (closure.transactions && closure.transactions.length > 0) {
+					doc.setFontSize(14);
+					doc.text('Detalle de Transacciones', 20, y);
+					y += 8;
+
+					doc.setFontSize(9);
+					closure.transactions.forEach(t => {
+						if (y > 270) {
+							doc.addPage();
+							y = 20;
+						}
+						doc.text(`${new Date(t.date).toLocaleTimeString('es-MX')} - Mesa ${t.tableNumber || '-'} - ${Utils.formatCurrency(t.amount)}`, 20, y);
+						y += 6;
+					});
+				}
+
+				const pdfBlob = doc.output('blob');
+				const pdfUrl = URL.createObjectURL(pdfBlob);
+				window.open(pdfUrl, '_blank');
+			}
+
+			async function deleteClosure(closureId) {
+				if (!confirm('¿Eliminar este cierre de caja?')) return;
+				AppState.cashClosures = AppState.cashClosures.filter(c => c.id !== closureId);
+				await API.save('cash_closures', AppState.cashClosures);
+				viewClosureHistory();
+				Utils.showNotification('Cierre eliminado', 'success');
+			}
+
+			// GENERAR PDF FACTURA
+			async function generateInvoicePDF(order) {
+				const { jsPDF } = window.jspdf;
+				const doc = new jsPDF({
+					unit: 'mm',
+					format: [80, 200] // Formato ticket POS
+				});
+
+				doc.setFontSize(16);
+				doc.text('RESTAURANTE', 40, 10, { align: 'center' });
+				doc.setFontSize(10);
+				doc.text('Ticket de Venta', 40, 16, { align: 'center' });
+				doc.text('------------------------', 40, 20, { align: 'center' });
+
+				doc.setFontSize(9);
+				doc.text(`Mesa: ${order.tableNumber}`, 5, 26);
+				doc.text(`Fecha: ${new Date(order.createdAt).toLocaleString('es-MX')}`, 5, 31);
+				doc.text('------------------------', 40, 35, { align: 'center' });
+
+				let y = 40;
+				doc.setFontSize(8);
+				order.items.forEach(item => {
+					doc.text(`${item.quantity}x ${item.name}`, 5, y);
+					doc.text(`$${(item.price * item.quantity).toFixed(2)}`, 70, y, { align: 'right' });
+					y += 5;
+					if (item.notes) {
+						doc.setFontSize(7);
+						doc.text(`  Nota: ${item.notes}`, 5, y);
+						y += 4;
+						doc.setFontSize(8);
+					}
+				});
+
+				doc.text('------------------------', 40, y, { align: 'center' });
+				y += 5;
+				doc.setFontSize(12);
+				doc.text(`TOTAL: $${order.total.toFixed(2)}`, 40, y, { align: 'center' });
+				y += 7;
+				doc.setFontSize(8);
+				doc.text('Gracias por su preferencia', 40, y, { align: 'center' });
+
+				// Abrir en nueva pestaña para visualizar
+				const pdfBlob = doc.output('blob');
+				const pdfUrl = URL.createObjectURL(pdfBlob);
+				window.open(pdfUrl, '_blank');
+			}
+
+			// GENERAR PDF CIERRE DE CAJA
+			function generateCloseCashPDF() {
+				const { jsPDF } = window.jspdf;
+				const doc = new jsPDF();
+
+				const today = Utils.getDateKey();
+				const todayTransactions = AppState.transactions.filter(t => Utils.getDateKeyFromISO(t.date) === today);
+				const totalSales = todayTransactions.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+				doc.setFontSize(20);
+				doc.text('CIERRE DE CAJA', 105, 20, { align: 'center' });
+				doc.setFontSize(12);
+				doc.text(`Fecha: ${new Date().toLocaleDateString('es-MX')}`, 105, 30, { align: 'center' });
+				doc.text(`Hora: ${new Date().toLocaleTimeString('es-MX')}`, 105, 37, { align: 'center' });
+
+				doc.setLineWidth(0.5);
+				doc.line(20, 42, 190, 42);
+
+				let y = 55;
+				doc.setFontSize(14);
+				doc.text('Resumen del Día', 20, y);
+				y += 10;
+
+				doc.setFontSize(11);
+				doc.text(`Total de Transacciones: ${todayTransactions.length}`, 20, y);
+				y += 8;
+				doc.text(`Ingresos Totales: ${Utils.formatCurrency(totalSales)}`, 20, y);
+				y += 15;
+
+				doc.setFontSize(14);
+				doc.text('Detalle de Transacciones', 20, y);
+				y += 8;
+
+				doc.setFontSize(9);
+				todayTransactions.forEach(t => {
+					if (y > 270) {
+						doc.addPage();
+						y = 20;
+					}
+					doc.text(`${new Date(t.date).toLocaleTimeString('es-MX')} - Mesa ${t.tableNumber || '-'} - ${Utils.formatCurrency(t.amount)}`, 20, y);
+					y += 6;
+				});
+
+				// Abrir en nueva pestaña para visualizar
+				const pdfBlob = doc.output('blob');
+				const pdfUrl = URL.createObjectURL(pdfBlob);
+				window.open(pdfUrl, '_blank');
+			}
+
+			// Funciones para menú móvil
+			function toggleMobileMenu() {
+				const sidebar = document.getElementById('sidebar');
+				const overlay = document.querySelector('.mobile-overlay');
+				sidebar.classList.toggle('mobile-open');
+				overlay.classList.toggle('active');
+			}
+
+			function closeMobileMenu() {
+				const sidebar = document.getElementById('sidebar');
+				const overlay = document.querySelector('.mobile-overlay');
+				sidebar.classList.remove('mobile-open');
+				overlay.classList.remove('active');
+			}
+
+			// RENTABILIDAD
+			function renderProfitability() {
+				generateProfitabilityReport();
+			}
+
+			// Variables globales para charts
+			let salesByDayChart = null;
+			let topProductsChart = null;
+			let profitByMonthChart = null;
+			let categoryChart = null;
+
+			function generateProfitabilityReport() {
+				// Verificar si hay productos sin costo
+				const productsWithoutCost = AppState.menuItems.filter(item => !item.cost || item.cost === 0);
+				const warningDiv = document.getElementById('cost-warning');
+				if (productsWithoutCost.length > 0) {
+					warningDiv.style.display = 'block';
+				} else {
+					warningDiv.style.display = 'none';
+				}
+
+				// Usar transacciones como fuente de verdad (consistente con Finanzas y Dashboard)
+				const completedOrders = AppState.orders.filter(o => o.status === 'completed');
+				const ordersById = new Map(completedOrders.map(order => [order.id, order]));
+
+				// Obtener todas las transacciones de venta con monto positivo
+				const saleTransactions = AppState.transactions.filter(transaction => {
+					if (!transaction?.date) return false;
+					const amount = getTransactionSignedAmount(transaction);
+					return amount > 0; // Solo ingresos positivos
+				});
+
+				// Mapear transacciones por orderId para obtener detalles de productos
+				const saleTransactionByOrderId = new Map();
+				saleTransactions.forEach(transaction => {
+					if (transaction.orderId && !saleTransactionByOrderId.has(transaction.orderId)) {
+						saleTransactionByOrderId.set(transaction.orderId, transaction);
+					}
+				});
+
+				// Para reportes de productos, usar órdenes que tengan transacción asociada
+				const reportOrders = completedOrders.filter(order => saleTransactionByOrderId.has(order.id));
+
+				const resolveOrderDate = (order) => {
+					const transaction = saleTransactionByOrderId.get(order.id);
+					return transaction?.date || order.completedAt;
+				};
+
+				// Calcular ventas por producto
+				const productSales = {};
+
+				reportOrders.forEach(order => {
+					order.items.forEach(item => {
+						if (!productSales[item.menuItemId]) {
+							const menuItem = AppState.menuItems.find(m => m.id === item.menuItemId);
+							productSales[item.menuItemId] = {
+								name: item.name,
+								cost: menuItem?.cost || 0,
+								price: item.price,
+								quantity: 0,
+								totalSales: 0,
+								totalCost: 0,
+								category: menuItem?.category || 'Sin Categoría'
+							};
+						}
+						productSales[item.menuItemId].quantity += item.quantity;
+						productSales[item.menuItemId].totalSales += item.price * item.quantity;
+						productSales[item.menuItemId].totalCost += (productSales[item.menuItemId].cost * item.quantity);
+					});
+				});
+
+				// === MÉTRICAS PRINCIPALES ===
+				const today = Utils.getDateKey();
+				const thisMonth = Utils.getMonthKey();
+
+				// Fecha de inicio para el cálculo del mes (reinicio desde 2026-02-07)
+				const monthStartDate = '2026-02-07';
+
+				let profitToday = 0;
+				let profitMonth = 0;
+				let salesToday = 0;
+				let salesMonth = 0;
+				let ordersMonthCount = 0;
+
+				// Calcular ventas totales desde transacciones (consistente con Finanzas)
+				let totalSalesTodayFromTransactions = 0;
+				let totalSalesMonthFromTransactions = 0;
+
+				// Calcular rentabilidad usando la misma lógica que renderFinanceSummary() en Finanzas
+				// Iteramos directamente sobre las transacciones de venta (no sobre reportOrders)
+				saleTransactions.forEach(transaction => {
+					const amount = getTransactionSignedAmount(transaction);
+					if (amount <= 0) return;
+
+					const transactionDate = Utils.getDateKeyFromISO(transaction.date);
+					const transactionMonth = Utils.getMonthKeyFromISO(transaction.date);
+
+					// Acumular ventas totales
+					if (transactionDate === today) {
+						totalSalesTodayFromTransactions += amount;
+					}
+					if (transactionDate >= monthStartDate) {
+						totalSalesMonthFromTransactions += amount;
+					}
+
+					// Calcular rentabilidad para transacciones de tipo 'sale' con orden asociada
+					// (misma lógica que renderFinanceSummary en Finanzas)
+					if (transaction.type === 'sale' && amount > 0 && transaction.orderId) {
+						const order = AppState.orders.find(o => o.id === transaction.orderId);
+						if (order) {
+							let orderCost = 0;
+							order.items.forEach(item => {
+								const menuItem = AppState.menuItems.find(m => m.id === item.menuItemId);
+								const cost = menuItem?.cost || 0;
+								orderCost += cost * item.quantity;
+							});
+
+							// Ganancia = monto de la transacción - costo de productos
+							const orderProfit = amount - orderCost;
+
+							if (transactionDate === today) {
+								profitToday += orderProfit;
+								salesToday += amount;
+							}
+							if (transactionDate >= monthStartDate) {
+								profitMonth += orderProfit;
+								salesMonth += amount;
+								ordersMonthCount++;
+							}
+						}
+					}
+				});
+
+				// Actualizar métricas principales
+				document.getElementById('profit-today').textContent = Utils.formatCurrency(profitToday);
+				document.getElementById('profit-month').textContent = Utils.formatCurrency(profitMonth);
+				document.getElementById('orders-month-count').textContent = `${ordersMonthCount} órdenes`;
+
+				// Mostrar ventas totales del día (de transacciones, consistente con Finanzas)
+				const profitTodayChangeEl = document.getElementById('profit-today-change');
+				if (profitTodayChangeEl) {
+					profitTodayChangeEl.textContent = `Ventas: ${Utils.formatCurrency(totalSalesTodayFromTransactions)}`;
+				}
+
+				const products = Object.values(productSales);
+
+				// Margen promedio
+				if (products.length > 0) {
+					const avgMargin = products.reduce((sum, p) => {
+						const margin = p.totalSales > 0 ? ((p.totalSales - p.totalCost) / p.totalSales) * 100 : 0;
+						return sum + margin;
+					}, 0) / products.length;
+					document.getElementById('margin-avg').textContent = avgMargin.toFixed(1) + '%';
+
+					// Producto más rentable
+					const mostProfitable = products.reduce((max, p) => {
+						const profit = p.totalSales - p.totalCost;
+						const maxProfit = max.totalSales - max.totalCost;
+						return profit > maxProfit ? p : max;
+					}, products[0]);
+					document.getElementById('most-profitable').textContent = mostProfitable.name;
+					document.getElementById('most-profitable-profit').textContent = Utils.formatCurrency(mostProfitable.totalSales - mostProfitable.totalCost);
+
+					// Producto más vendido
+					const mostSold = products.reduce((max, p) => p.quantity > max.quantity ? p : max, products[0]);
+					document.getElementById('most-sold').textContent = mostSold.name;
+					document.getElementById('most-sold-quantity').textContent = `${mostSold.quantity} unidades`;
+				} else {
+					document.getElementById('margin-avg').textContent = '0%';
+					document.getElementById('most-profitable').textContent = '-';
+					document.getElementById('most-profitable-profit').textContent = '-';
+					document.getElementById('most-sold').textContent = '-';
+					document.getElementById('most-sold-quantity').textContent = '-';
+				}
+
+				// Ticket promedio
+				const avgTicket = ordersMonthCount > 0 ? salesMonth / ordersMonthCount : 0;
+				document.getElementById('avg-ticket').textContent = Utils.formatCurrency(avgTicket);
+				document.getElementById('total-tickets').textContent = `${reportOrders.length} órdenes totales`;
+
+				// === GRÁFICA: VENTAS POR DÍA (Últimos 7 días) ===
+				const last7Days = [];
+				const salesByDay = {};
+				for (let i = 6; i >= 0; i--) {
+					const date = new Date();
+					date.setDate(date.getDate() - i);
+					const dateKey = Utils.getDateKey(date);
+					last7Days.push(dateKey);
+					salesByDay[dateKey] = 0;
+				}
+
+				reportOrders.forEach(order => {
+					const referenceDateISO = resolveOrderDate(order);
+					if (!referenceDateISO) {
+						return;
+					}
+					const orderDate = Utils.getDateKeyFromISO(referenceDateISO);
+					if (salesByDay.hasOwnProperty(orderDate)) {
+						order.items.forEach(item => {
+							salesByDay[orderDate] += item.price * item.quantity;
+						});
+					}
+				});
+
+				if (salesByDayChart) salesByDayChart.destroy();
+				const ctxDay = document.getElementById('sales-by-day-chart').getContext('2d');
+				salesByDayChart = new Chart(ctxDay, {
+					type: 'line',
+					data: {
+						labels: last7Days.map(d => Utils.formatDateKeyForChart(d)),
+						datasets: [{
+							label: 'Ventas',
+							data: last7Days.map(d => salesByDay[d]),
+							borderColor: '#ffffff',
+							backgroundColor: 'rgba(255, 255, 255, 0.1)',
+							borderWidth: 3,
+							fill: true,
+							tension: 0.4,
+							pointBackgroundColor: '#ffffff',
+							pointBorderColor: '#000000',
+							pointBorderWidth: 2,
+							pointRadius: 5,
+							pointHoverRadius: 7
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: true,
+						plugins: {
+							legend: { display: false },
+							tooltip: {
+								backgroundColor: '#000',
+								titleColor: '#fff',
+								bodyColor: '#fff',
+								borderColor: '#fff',
+								borderWidth: 1,
+								callbacks: {
+									label: (context) => 'Ventas: ' + Utils.formatCurrency(context.parsed.y)
+								}
+							}
+						},
+						scales: {
+							y: {
+								beginAtZero: true,
+								ticks: { color: '#e0e0e0' },
+								grid: { color: 'rgba(255, 255, 255, 0.1)' }
+							},
+							x: {
+								ticks: { color: '#e0e0e0' },
+								grid: { display: false }
+							}
+						}
+					}
+				});
+
+				// === GRÁFICA: TOP 5 PRODUCTOS MÁS VENDIDOS ===
+				const top5Products = products.sort((a, b) => b.quantity - a.quantity).slice(0, 5);
+
+				if (topProductsChart) topProductsChart.destroy();
+				const ctxTop = document.getElementById('top-products-chart').getContext('2d');
+				topProductsChart = new Chart(ctxTop, {
+					type: 'bar',
+					data: {
+						labels: top5Products.map(p => p.name),
+						datasets: [{
+							label: 'Unidades Vendidas',
+							data: top5Products.map(p => p.quantity),
+							backgroundColor: [
+								'rgba(255, 107, 53, 0.8)',
+								'rgba(255, 152, 0, 0.8)',
+								'rgba(76, 175, 80, 0.8)',
+								'rgba(33, 150, 243, 0.8)',
+								'rgba(156, 39, 176, 0.8)'
+							],
+							borderColor: '#ffffff',
+							borderWidth: 2
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: true,
+						plugins: {
+							legend: { display: false },
+							tooltip: {
+								backgroundColor: '#000',
+								titleColor: '#fff',
+								bodyColor: '#fff',
+								borderColor: '#fff',
+								borderWidth: 1
+							}
+						},
+						scales: {
+							y: {
+								beginAtZero: true,
+								ticks: { color: '#e0e0e0', stepSize: 1 },
+								grid: { color: 'rgba(255, 255, 255, 0.1)' }
+							},
+							x: {
+								ticks: { color: '#e0e0e0' },
+								grid: { display: false }
+							}
+						}
+					}
+				});
+
+				// === GRÁFICA: GANANCIAS POR MES (Últimos 6 meses) ===
+				const last6Months = [];
+				const profitByMonth = {};
+				for (let i = 5; i >= 0; i--) {
+					const date = new Date();
+					date.setDate(1);
+					date.setMonth(date.getMonth() - i);
+					const monthKey = Utils.getMonthKey(date);
+					last6Months.push(monthKey);
+					profitByMonth[monthKey] = 0;
+				}
+
+				reportOrders.forEach(order => {
+					const referenceDateISO = resolveOrderDate(order);
+					if (!referenceDateISO) {
+						return;
+					}
+					const orderMonth = Utils.getMonthKeyFromISO(referenceDateISO);
+					if (profitByMonth.hasOwnProperty(orderMonth)) {
+						order.items.forEach(item => {
+							const menuItem = AppState.menuItems.find(m => m.id === item.menuItemId);
+							const cost = menuItem?.cost || 0;
+							const profit = (item.price - cost) * item.quantity;
+							profitByMonth[orderMonth] += profit;
+						});
+					}
+				});
+
+				if (profitByMonthChart) profitByMonthChart.destroy();
+				const ctxMonth = document.getElementById('profit-by-month-chart').getContext('2d');
+				profitByMonthChart = new Chart(ctxMonth, {
+					type: 'bar',
+					data: {
+						labels: last6Months.map(m => {
+							const [year, month] = m.split('-');
+							const date = new Date(year, month - 1);
+							return date.toLocaleDateString('es-MX', { month: 'short', year: 'numeric' });
+						}),
+						datasets: [{
+							label: 'Ganancias',
+							data: last6Months.map(m => profitByMonth[m]),
+							backgroundColor: 'rgba(76, 175, 80, 0.8)',
+							borderColor: '#ffffff',
+							borderWidth: 2
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: true,
+						plugins: {
+							legend: { display: false },
+							tooltip: {
+								backgroundColor: '#000',
+								titleColor: '#fff',
+								bodyColor: '#fff',
+								borderColor: '#fff',
+								borderWidth: 1,
+								callbacks: {
+									label: (context) => 'Ganancia: ' + Utils.formatCurrency(context.parsed.y)
+								}
+							}
+						},
+						scales: {
+							y: {
+								beginAtZero: true,
+								ticks: { color: '#e0e0e0' },
+								grid: { color: 'rgba(255, 255, 255, 0.1)' }
+							},
+							x: {
+								ticks: { color: '#e0e0e0' },
+								grid: { display: false }
+							}
+						}
+					}
+				});
+
+				// === GRÁFICA: VENTAS POR CATEGORÍA ===
+				const salesByCategory = {};
+				products.forEach(p => {
+					if (!salesByCategory[p.category]) {
+						salesByCategory[p.category] = 0;
+					}
+					salesByCategory[p.category] += p.totalSales;
+				});
+
+				const categories = Object.keys(salesByCategory);
+				const categoryColors = [
+					'rgba(255, 107, 53, 0.8)',
+					'rgba(255, 152, 0, 0.8)',
+					'rgba(76, 175, 80, 0.8)',
+					'rgba(33, 150, 243, 0.8)',
+					'rgba(156, 39, 176, 0.8)',
+					'rgba(244, 67, 54, 0.8)'
+				];
+
+				if (categoryChart) categoryChart.destroy();
+				const ctxCat = document.getElementById('category-chart').getContext('2d');
+				categoryChart = new Chart(ctxCat, {
+					type: 'doughnut',
+					data: {
+						labels: categories,
+						datasets: [{
+							data: categories.map(c => salesByCategory[c]),
+							backgroundColor: categoryColors.slice(0, categories.length),
+							borderColor: '#000000',
+							borderWidth: 3
+						}]
+					},
+					options: {
+						responsive: true,
+						maintainAspectRatio: true,
+						plugins: {
+							legend: {
+								position: 'bottom',
+								labels: { color: '#e0e0e0', padding: 15, font: { size: 12 } }
+							},
+							tooltip: {
+								backgroundColor: '#000',
+								titleColor: '#fff',
+								bodyColor: '#fff',
+								borderColor: '#fff',
+								borderWidth: 1,
+								callbacks: {
+									label: (context) => {
+										const label = context.label || '';
+										const value = Utils.formatCurrency(context.parsed);
+										const total = context.dataset.data.reduce((a, b) => a + b, 0);
+										const percentage = ((context.parsed / total) * 100).toFixed(1);
+										return `${label}: ${value} (${percentage}%)`;
+									}
+								}
+							}
+						}
+					}
+				});
+
+				// === TABLA DE RENTABILIDAD ===
+				const tbody = document.querySelector('#profitability-table tbody');
+				if (!tbody) return;
+
+				if (products.length === 0) {
+					tbody.innerHTML = `
+					<tr>
+						<td colspan="6" class="px-6 py-20 text-center text-slate-400">
+							<span class="material-symbols-outlined text-5xl mb-2 opacity-20">insights</span>
+							<p>No hay datos de ventas para calcular rentabilidad</p>
+						</td>
+					</tr>`;
+					return;
+				}
+
+				tbody.innerHTML = products
+					.sort((a, b) => (b.totalSales - b.totalCost) - (a.totalSales - a.totalCost))
+					.map(product => {
+						const totalProfit = product.totalSales - product.totalCost;
+						const margin = product.totalSales > 0 ? ((totalProfit / product.totalSales) * 100).toFixed(1) : 0;
+						const noCostConfigured = product.cost === 0;
+
+						return `
+						<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+							<td class="px-6 py-4">
+								<p class="text-sm font-bold text-slate-900 dark:text-white">${product.name}</p>
+								${noCostConfigured ? '<p class="text-[10px] text-amber-600 font-medium flex items-center gap-1 mt-0.5"><span class="w-1 h-1 rounded-full bg-amber-500"></span>Sin costo configurado</p>' : ''}
+							</td>
+							<td class="px-6 py-4 text-center text-sm text-slate-600 dark:text-slate-400 font-medium">${product.quantity}</td>
+							<td class="px-6 py-4 text-right">
+								<span class="text-sm text-slate-500 font-medium">${Utils.formatCurrency(product.totalCost)}</span>
+								${noCostConfigured ? '<p class="text-[10px] text-slate-400">Pendiente</p>' : ''}
+							</td>
+							<td class="px-6 py-4 text-right text-sm font-bold text-slate-900 dark:text-white">${Utils.formatCurrency(product.totalSales)}</td>
+							<td class="px-6 py-4 text-right">
+								<span class="text-sm font-bold text-primary-dark dark:text-primary">${Utils.formatCurrency(totalProfit)}</span>
+								${noCostConfigured ? '<p class="text-[10px] text-amber-500">Aproximado</p>' : ''}
+							</td>
+							<td class="px-6 py-4 text-center">
+								<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${noCostConfigured ? 'bg-amber-100 text-amber-700' : margin > 50 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'} border border-black/5">
+									${margin}%
+								</span>
+							</td>
+						</tr>
+					`;
+					}).join('');
+			}
+
+			// Función de depuración para verificar datos
+			function showDebugInfo() {
+				const totalOrders = AppState.orders.length;
+				const completedOrders = AppState.orders.filter(o => o.status === 'completed');
+				const pendingOrders = AppState.orders.filter(o => o.status === 'pending');
+				const cancelledOrders = AppState.orders.filter(o => o.status === 'cancelled');
+
+				let message = `ESTADO DEL SISTEMA\n\n`;
+				message += `Total de órdenes: ${totalOrders}\n`;
+				message += `- Completadas: ${completedOrders.length}\n`;
+				message += `- Pendientes: ${pendingOrders.length}\n`;
+				message += `- Canceladas: ${cancelledOrders.length}\n\n`;
+
+				if (completedOrders.length > 0) {
+					message += `ORDENES COMPLETADAS:\n`;
+					completedOrders.forEach((order, i) => {
+						const date = order.completedAt ? new Date(order.completedAt).toLocaleString('es-MX') : 'Sin fecha';
+						const items = order.items.length;
+						const total = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+						message += `\n${i + 1}. Mesa ${order.tableNumber || '?'} - ${date}\n`;
+						message += `   ${items} producto(s) - Total: ${Utils.formatCurrency(total)}\n`;
+					});
+				} else {
+					message += `No hay órdenes completadas en el sistema.\n`;
+					message += `Por eso la sección de Rentabilidad está vacía.\n\n`;
+					message += `Para ver datos de rentabilidad:\n`;
+					message += `1. Ve a "Dashboard"\n`;
+					message += `2. Toma un pedido en una mesa\n`;
+					message += `3. Completa la orden\n`;
+					message += `4. Regresa a "Rentabilidad" para ver los datos`;
+				}
+
+				alert(message);
+			}
+
+			// CONFIGURACIÓN DEL SISTEMA
+			async function resetSalesData() {
+				const confirmation = prompt(
+					'ADVERTENCIA: Esta acción eliminará TODOS los datos de ventas de forma PERMANENTE.\n\n' +
+					'Se eliminarán:\n' +
+					'• Todas las órdenes\n' +
+					'• Todas las transacciones\n' +
+					'• Todos los cierres de caja\n' +
+					'• El estado de las mesas se reseteará\n\n' +
+					'Los productos del menú y meseros NO se eliminarán.\n\n' +
+					'Escribe "CONFIRMAR" (en mayúsculas) para proceder:'
+				);
+
+				if (confirmation !== 'CONFIRMAR') {
+					alert('Operación cancelada.');
+					return;
+				}
+
+				try {
+					// Limpiar órdenes
+					AppState.orders = [];
+					await API.save('orders', []);
+
+					// Limpiar transacciones
+					AppState.transactions = [];
+					await API.save('transactions', []);
+
+					// Limpiar cierres de caja
+					AppState.cashClosures = [];
+					await API.save('cash_closures', []);
+
+					// Resetear estado de mesas
+					AppState.tables.forEach(table => {
+						table.status = 'available';
+						table.currentOrder = null;
+					});
+					await API.save('tables', AppState.tables);
+
+					alert('Datos de ventas eliminados correctamente.\n\nLa aplicación está lista para uso en producción.');
+
+					// Refrescar vistas
+					renderDashboard();
+					renderOrders();
+					renderFinance();
+					updateSystemInfo();
+					generateProfitabilityReport();
+				} catch (error) {
+					alert('❌ Error al limpiar datos: ' + error.message);
+					console.error(error);
+				}
+			}
+
+			function updateSystemInfo() {
+				document.getElementById('info-menu-items').textContent = AppState.menuItems.length;
+				document.getElementById('info-tables').textContent = AppState.tables.length;
+				document.getElementById('info-orders').textContent = AppState.orders.length;
+				document.getElementById('info-waiters').textContent = AppState.waiters.length;
+			}
+
+			// Función para cerrar sesión
+			function logout() {
+				if (confirm('¿Cerrar sesión?')) {
+					localStorage.removeItem('userSession');
+					window.location.href = '/login.html';
+				}
+			}
+
+			init();
+		</script>
+	</body>
+
+</html>
