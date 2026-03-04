@@ -680,7 +680,7 @@
 
 						<div
 							class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
-							<div class="overflow-x-auto">
+							<div class="table-responsive">
 								<table class="w-full text-left border-collapse" id="menu-table">
 									<thead>
 										<tr
@@ -742,8 +742,9 @@
 						<div class="space-y-6">
 							<!-- Filtros -->
 							<div
-								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm">
-								<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+								class="bg-surface dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm overflow-x-auto scrollbar-hide">
+								<div
+									class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 min-w-[800px] lg:min-w-0">
 									<div class="space-y-1.5">
 										<label
 											class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Desde</label>
@@ -842,7 +843,7 @@
 							<!-- Table -->
 							<div
 								class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
-								<div class="overflow-x-auto">
+								<div class="table-responsive">
 									<table class="w-full text-left border-collapse" id="transactions-table">
 										<thead>
 											<tr
@@ -919,7 +920,7 @@
 							<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-4">Historial de Cierres</h3>
 							<div
 								class="bg-surface dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark overflow-hidden shadow-sm">
-								<div class="overflow-x-auto">
+								<div class="table-responsive">
 									<table class="w-full text-left border-collapse" id="closures-table">
 										<thead>
 											<tr
@@ -1091,7 +1092,7 @@
 									Rentabilidad Detallada por Producto
 								</h3>
 							</div>
-							<div class="overflow-x-auto">
+							<div class="table-responsive">
 								<table class="w-full text-left border-collapse" id="profitability-table">
 									<thead>
 										<tr
@@ -3014,6 +3015,13 @@
 					renderFinance();
 					generateProfitabilityReport();
 
+					// 9. Preguntar si desea generar factura electrónica (solo si hay configuración)
+					if (AppState.dianConfig && AppState.dianConfig.active) {
+						if (confirm('✅ Pedido completado exitosamente.\n\n¿Deseas generar factura electrónica DIAN?')) {
+							InvoiceModal.open(order);
+						}
+					}
+
 				} catch (error) {
 					console.error('Error completando orden:', error);
 
@@ -4590,6 +4598,7 @@
 
 			init();
 		</script>
+		<script src="invoice-modal.js"></script>
 	</body>
 
 </html>
