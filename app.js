@@ -240,22 +240,6 @@ async function loadInitialData() {
 	}
 }
 
-		// Intentar cargar cash_closures, si falla, usar array vacío
-		try {
-			AppState.cashClosures = await API.getAll('cash_closures');
-		} catch (err) {
-			console.warn('⚠️ Tabla cash_closures no disponible en el servidor');
-			AppState.cashClosures = [];
-		}
-
-		const configArray = await API.getAll('config');
-		AppState.config = configArray.length > 0 ? configArray[0] : {};
-	} catch (error) {
-		console.error('Error cargando datos iniciales:', error);
-		throw error;
-	}
-}
-
 // Inicializar datos de ejemplo si no existen
 async function initializeDefaultData() {
 	if (AppState.menuItems.length === 0) {
